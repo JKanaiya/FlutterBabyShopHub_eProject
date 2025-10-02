@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  supabase_flutter: ^2.5.5
+  image_picker: ^1.0.7
   google_fonts:
 
   # The following adds the Cupertino Icons font to your application.
