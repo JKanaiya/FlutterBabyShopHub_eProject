@@ -13,6 +13,17 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+//Added new admin controller and status
+  final _adminController =TextEditingController();
+  bool _isAdmin = false;
+  //override dispose to hide or dispose the admin textfiled if the checkbox has not been checked
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _adminController.dispose();
+    super.dispose();
+  }
 
   Future<void> _signUp() async {
     final email = _emailController.text.trim();
@@ -63,6 +74,35 @@ class _AuthPageState extends State<AuthPage> {
     }
   }
 
+  //Added admin navigation logic
+  Future <void> _navigateToAdmin() async{
+    //to do change this hard coded key and enable access of it from the supabase storage
+    const String secretAdminKey='BABYSHOPP_ADMIN_2025';
+
+    final enteredKey=_adminController.text.trim();
+
+    if (enteredKey.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter the admin key')),
+      );
+      return;
+
+    }
+    if(enteredKey ==secretAdminKey){
+      Navigator.pushReplacement(
+
+        //navigates to the proguct page for To do navigate to the correct admin page
+        context, MaterialPageRoute(builder: (_) => const ProductsPage()),
+      );
+    }else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Access denied invalid key')),
+      );
+    }
+
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,6 +124,58 @@ class _AuthPageState extends State<AuthPage> {
             ElevatedButton(onPressed: _signUp, child: const Text("Sign Up")),
             ElevatedButton(onPressed: _signIn, child: const Text("Sign In")),
             const SizedBox(height: 20),
+            //Added the checkbox for the admin to access the textfield for the key
+            Row(
+              children: [
+                Checkbox(value: _isAdmin,
+                    onChanged: (bool ? newValue){
+
+                      {
+                        setState(() {
+                          _isAdmin=newValue ?? false;
+                        });
+                      }
+                  
+                    }
+                ),
+                const Text('Admin section'),
+              ],
+            ),
+            
+            //thus display the admin key field
+            if(_isAdmin)
+              Padding(
+                padding: const EdgeInsets.only(top: 10,bottom: 20),
+              child: TextField(
+                controller: _adminController,
+                decoration: const InputDecoration(
+                  labelText: 'Admin Key',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                  keyboardType: TextInputType.text,
+              ),
+              ),
+            //button to navigate to admin page
+            if(_isAdmin)
+              ElevatedButton.icon(
+                  onPressed: _navigateToAdmin,
+                  icon: const Icon(Icons.security),
+                label: const Text("Access admin Panel"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade700,
+                  foregroundColor: Colors.white,
+                ),
+
+              ),
+            
+            
+            
+            
+            
+            
+            
+            SizedBox(height: 20,),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(context,
