@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_index.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'products_page.dart';
@@ -13,8 +14,8 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-//Added new admin controller and status
-  final _adminController =TextEditingController();
+  //Added new admin controller and status
+  final _adminController = TextEditingController();
   bool _isAdmin = false;
   //override dispose to hide or dispose the admin textfiled if the checkbox has not been checked
   @override
@@ -44,17 +45,17 @@ class _AuthPageState extends State<AuthPage> {
 
       if (res.user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Signup success! Profile created automatically.")),
+          const SnackBar(
+            content: Text("Signup success! Profile created automatically."),
+          ),
         );
       }
     } on AuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signup failed: ${e.message}")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Signup failed: ${e.message}")));
     }
   }
-
-
 
   Future<void> _signIn() async {
     final res = await Supabase.instance.client.auth.signInWithPassword(
@@ -68,39 +69,36 @@ class _AuthPageState extends State<AuthPage> {
         MaterialPageRoute(builder: (_) => const ProductsPage()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login failed")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Login failed")));
     }
   }
 
   //Added admin navigation logic
-  Future <void> _navigateToAdmin() async{
-    //to do change this hard coded key and enable access of it from the supabase storage
-    const String secretAdminKey='BABYSHOPP_ADMIN_2025';
+  Future<void> _navigateToAdmin() async {
+    //TODO: change this hard coded key and enable access of it from the supabase storage
+    const String secretAdminKey = 'BABYSHOPP_ADMIN_2025';
 
-    final enteredKey=_adminController.text.trim();
+    final enteredKey = _adminController.text.trim();
 
-    if (enteredKey.isEmpty){
+    if (enteredKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter the admin key')),
+        const SnackBar(content: Text('Please enter the admin key')),
       );
       return;
-
     }
-    if(enteredKey ==secretAdminKey){
+    if (enteredKey == secretAdminKey) {
       Navigator.pushReplacement(
-
         //navigates to the proguct page for To do navigate to the correct admin page
-        context, MaterialPageRoute(builder: (_) => const ProductsPage()),
+        context,
+        MaterialPageRoute(builder: (_) => const AdminIndex()),
       );
-    }else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Access denied invalid key')),
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Access denied invalid key')),
       );
     }
-
-
-
   }
 
   @override
@@ -127,59 +125,52 @@ class _AuthPageState extends State<AuthPage> {
             //Added the checkbox for the admin to access the textfield for the key
             Row(
               children: [
-                Checkbox(value: _isAdmin,
-                    onChanged: (bool ? newValue){
-
-                      {
-                        setState(() {
-                          _isAdmin=newValue ?? false;
-                        });
-                      }
-                  
+                Checkbox(
+                  value: _isAdmin,
+                  onChanged: (bool? newValue) {
+                    {
+                      setState(() {
+                        _isAdmin = newValue ?? false;
+                      });
                     }
+                  },
                 ),
                 const Text('Admin section'),
               ],
             ),
-            
+
             //thus display the admin key field
-            if(_isAdmin)
+            if (_isAdmin)
               Padding(
-                padding: const EdgeInsets.only(top: 10,bottom: 20),
-              child: TextField(
-                controller: _adminController,
-                decoration: const InputDecoration(
-                  labelText: 'Admin Key',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
+                padding: const EdgeInsets.only(top: 10, bottom: 20),
+                child: TextField(
+                  controller: _adminController,
+                  decoration: const InputDecoration(
+                    labelText: 'Admin Key',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
                   keyboardType: TextInputType.text,
-              ),
+                ),
               ),
             //button to navigate to admin page
-            if(_isAdmin)
+            if (_isAdmin)
               ElevatedButton.icon(
-                  onPressed: _navigateToAdmin,
-                  icon: const Icon(Icons.security),
+                onPressed: _navigateToAdmin,
+                icon: const Icon(Icons.security),
                 label: const Text("Access admin Panel"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
                   foregroundColor: Colors.white,
                 ),
-
               ),
-            
-            
-            
-            
-            
-            
-            
-            SizedBox(height: 20,),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
               },
               child: const Text("Go to Profile Page"),
             ),
