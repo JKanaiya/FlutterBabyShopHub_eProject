@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(
       context,
-      "Delius Unicase",
       "Delius Swash Caps",
+      "Delius Unicase",
     );
     MaterialTheme theme = MaterialTheme(textTheme);
     return MaterialApp(
