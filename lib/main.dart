@@ -16,9 +16,10 @@ void main() async {
   runApp(const MyApp());
 }
 
+final supabase = Supabase.instance.client;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
     );
     MaterialTheme theme = MaterialTheme(textTheme);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'BabyShopHub',
       // theme: ThemeData(primarySwatch: Colors.blue),
       theme: theme.light(),

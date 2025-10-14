@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_manage_front_page.dart';
 import 'package:flutter/material.dart';
 
 class AdminHome extends StatelessWidget {
@@ -52,8 +53,9 @@ class AdminHome extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    // TODO: Add proper functionality to navigate to the appt page here
-                    MaterialPageRoute(builder: (context) => AdminHome()),
+                    MaterialPageRoute(
+                      builder: (context) => AdminManageFrontPage(),
+                    ),
                   );
                 },
                 minTileHeight: 100,
