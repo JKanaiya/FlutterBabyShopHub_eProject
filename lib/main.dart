@@ -32,7 +32,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'BabyShopHub',
       // theme: ThemeData(primarySwatch: Colors.blue),
-      theme: theme.light(),
+      theme: theme.light().copyWith(
+        scrollbarTheme: ScrollbarThemeData(interactive: false),
+      ),
       home: const AuthPage(),
     );
   }

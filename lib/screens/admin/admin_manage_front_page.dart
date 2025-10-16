@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_manage_product.dart';
 import 'package:babyshophub/screens/admin/admin_products.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -31,12 +32,12 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
     try {
       var images = await Future.wait(downloadFutures);
 
-      // 2. Set the state to trigger a rebuild with the downloaded data
+      //  Set the state to trigger a rebuild with the downloaded data
       setState(() {
         _splashImageBytes = images;
       });
     } catch (e) {
-      // Handle the error, e.g., show a placeholder or error message
+      // Handle the error
       print('Error loading splash images: $e');
     }
   }
@@ -44,22 +45,22 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
   @override
   void initState() {
     super.initState();
-    // 3. Start the loading process
+    // Start the loading process
     _loadSplashImages();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_splashImageBytes == null) {
-      // Show a loading indicator while data is being fetched
       return const Center(child: CircularProgressIndicator());
     }
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      // TODO change to list view and remove the gap between the 2 sections
       body: SingleChildScrollView(
         child: SizedBox(
-          height: screenHeight,
+          height: screenHeight * 1.05,
           child: Column(
             children: [
               Stack(
@@ -102,7 +103,7 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                           context,
                           // TODO: Add proper functionality to navigate to the appt page here
                           MaterialPageRoute(
-                            builder: (context) => AdminProducts(),
+                            builder: (context) => AdminProductManage(),
                           ),
                         );
                       },
