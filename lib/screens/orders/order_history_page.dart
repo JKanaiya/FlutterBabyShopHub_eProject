@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'track_order_page.dart';
+
+final supabase = Supabase.instance.client;
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -20,91 +21,104 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   }
 
   Future<void> _fetchOrders() async {
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please log in")),
-        );
-        return;
-      }
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
-      final data = await Supabase.instance.client
+    try {
+      final data = await supabase
           .from('orders')
           .select('id, total_amount, status, created_at')
-          .eq('user_id', user.id)
           .order('created_at', ascending: false);
 
       setState(() {
         _orders = List<Map<String, dynamic>>.from(data);
-        _isLoading = false;
       });
     } catch (e) {
       debugPrint("Error fetching orders: $e");
+    } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  String _formatStatus(String status) {
-    switch (status) {
-      case 'pending':
-        return '🕓 Pending';
-      case 'shipped':
-        return '🚚 Shipped';
+  Color _statusColor(String s) {
+    switch (s) {
       case 'delivered':
-        return '✅ Delivered';
+        return Colors.green;
+      case 'shipped':
+        return Colors.orange;
+      case 'processing':
+        return Colors.amber;
       case 'cancelled':
-        return '❌ Cancelled';
+        return Colors.red;
       default:
-        return status;
+        return Colors.blueGrey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xfff5fafc),
       appBar: AppBar(
-        title: const Text("My Orders"),
+        title: const Text(
+          "Order History",
+          style: TextStyle(
+            color: Color(0xff006876),
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: const Color(0xff006876),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xff006876)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _orders.isEmpty
-          ? const Center(child: Text("No orders found"))
+          ? const Center(child: Text("No past orders yet"))
           : ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         itemCount: _orders.length,
-        itemBuilder: (context, index) {
-          final order = _orders[index];
-          final orderId = order['id'] as String;
+        itemBuilder: (context, idx) {
+          final order = _orders[idx];
           return Card(
+            margin: const EdgeInsets.only(bottom: 16),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
               title: Text(
-                "Order #${orderId.substring(0, 8).toUpperCase()}",
+                "Order #${order['id'].toString().substring(0, 8)}",
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Status: ${_formatStatus(order['status'])}"),
-                  Text(
-                      "Total: \$${order['total_amount'].toStringAsFixed(2)}"),
-                  Text(
-                      "Date: ${DateTime.parse(order['created_at']).toLocal().toString().split('.')[0]}"),
-                ],
+              subtitle: Text(
+                "Date: ${order['created_at'].toString().split('T').first}\n"
+                    "Total: \$${order['total_amount']}",
               ),
-              trailing: const Icon(Icons.arrow_forward_ios_rounded),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TrackOrderPage(orderId: orderId),
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _statusColor(order['status'] ?? ''),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  order['status']?.toUpperCase() ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/track_order',
+                  arguments: order['id'],
                 );
               },
             ),

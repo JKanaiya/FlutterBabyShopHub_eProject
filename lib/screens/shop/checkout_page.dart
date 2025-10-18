@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final supabase = Supabase.instance.client;
+
 class CheckoutPage extends StatefulWidget {
   final String cartId;
 
@@ -14,6 +16,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _addresses = [];
   String? _selectedAddressId;
+  String? _selectedPayment;
   double _totalAmount = 0.0;
 
   @override
@@ -24,7 +27,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Future<void> _loadCheckoutData() async {
     try {
-      final user = Supabase.instance.client.auth.currentUser;
+      final user = supabase.auth.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to continue')),
@@ -33,13 +36,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
       }
 
       // 🏠 Fetch saved addresses
-      final addressData = await Supabase.instance.client
+      final addressData = await supabase
           .from('addresses')
           .select('id, label, street, city, country, phone')
           .eq('user_id', user.id);
 
       // 🛒 Calculate total from cart_items
-      final cartData = await Supabase.instance.client
+      final cartData = await supabase
           .from('cart_items')
           .select('quantity, unit_price')
           .eq('cart_id', widget.cartId);
@@ -68,27 +71,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
+    if (_selectedPayment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a payment method')),
+      );
+      return;
+    }
+
     try {
       setState(() => _isLoading = true);
-      final user = Supabase.instance.client.auth.currentUser;
+      final user = supabase.auth.currentUser;
 
       // 🧾 1. Create order
-      final orderInsert = await Supabase.instance.client
-          .from('orders')
-          .insert({
+      final orderInsert = await supabase.from('orders').insert({
         'user_id': user!.id,
         'total_amount': _totalAmount,
         'currency': 'USD',
         'status': 'pending',
         'shipping_address_id': _selectedAddressId,
-      })
-          .select('id')
-          .single();
+      }).select('id').single();
 
       final orderId = orderInsert['id'];
 
       // 🧺 2. Fetch cart items
-      final cartItems = await Supabase.instance.client
+      final cartItems = await supabase
           .from('cart_items')
           .select('product_id, quantity, unit_price')
           .eq('cart_id', widget.cartId);
@@ -106,13 +112,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         };
       }).toList();
 
-      await Supabase.instance.client.from('order_items').insert(orderItems);
+      await supabase.from('order_items').insert(orderItems);
 
       // 🧹 4. Clear cart after successful order
-      await Supabase.instance.client
-          .from('cart_items')
-          .delete()
-          .eq('cart_id', widget.cartId);
+      await supabase.from('cart_items').delete().eq('cart_id', widget.cartId);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order placed successfully!')),
@@ -143,19 +146,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
         content: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(controller: labelCtrl, decoration: const InputDecoration(labelText: "Label")),
-              TextField(controller: streetCtrl, decoration: const InputDecoration(labelText: "Street")),
-              TextField(controller: cityCtrl, decoration: const InputDecoration(labelText: "City")),
-              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Phone")),
+              TextField(
+                  controller: labelCtrl,
+                  decoration: const InputDecoration(labelText: "Label")),
+              TextField(
+                  controller: streetCtrl,
+                  decoration: const InputDecoration(labelText: "Street")),
+              TextField(
+                  controller: cityCtrl,
+                  decoration: const InputDecoration(labelText: "City")),
+              TextField(
+                  controller: phoneCtrl,
+                  decoration: const InputDecoration(labelText: "Phone")),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
           TextButton(
             onPressed: () async {
-              final user = Supabase.instance.client.auth.currentUser;
-              await Supabase.instance.client.from('addresses').insert({
+              final user = supabase.auth.currentUser;
+              await supabase.from('addresses').insert({
                 'user_id': user!.id,
                 'label': labelCtrl.text,
                 'street': streetCtrl.text,
@@ -168,6 +181,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
             },
             child: const Text("Save"),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption(String label, String logoPath) {
+    return RadioListTile<String>(
+      value: label,
+      groupValue: _selectedPayment,
+      onChanged: (val) => setState(() => _selectedPayment = val),
+      activeColor: const Color(0xff006876),
+      title: Row(
+        children: [
+          Image.asset(
+            logoPath,
+            height: 28,
+            width: 28,
+            errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.payment, color: Colors.grey),
+          ),
+          const SizedBox(width: 10),
+          Text(label, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );
@@ -196,64 +231,131 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Shipping Address",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff006876))),
-            const SizedBox(height: 10),
-            if (_addresses.isEmpty)
-              const Text("No addresses found. Add one below."),
-            ..._addresses.map((addr) {
-              return RadioListTile<String>(
-                value: addr['id'],
-                groupValue: _selectedAddressId,
-                onChanged: (val) {
-                  setState(() => _selectedAddressId = val);
-                },
-                title: Text(addr['label'] ?? "Address"),
-                subtitle: Text(
-                    "${addr['street']}, ${addr['city']} - ${addr['country']}\n📞 ${addr['phone']}"),
-              );
-            }),
-            const SizedBox(height: 10),
-            Center(
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.add, color: Color(0xff006876)),
-                label: const Text("Add Address",
-                    style: TextStyle(color: Color(0xff006876))),
-                onPressed: _addNewAddress,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "Total: \$${_totalAmount.toStringAsFixed(2)}",
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _placeOrder,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff006876),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Center(
-                child: Text(
-                  "Place Order",
-                  style: TextStyle(fontSize: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Shipping Address",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff006876))),
+              const SizedBox(height: 10),
+              if (_addresses.isEmpty)
+                const Text("No addresses found. Add one below."),
+              ..._addresses.map((addr) {
+                return RadioListTile<String>(
+                  value: addr['id'],
+                  groupValue: _selectedAddressId,
+                  onChanged: (val) => setState(() => _selectedAddressId = val),
+                  title: Text(addr['label'] ?? "Address"),
+                  subtitle: Text(
+                      "${addr['street']}, ${addr['city']} - ${addr['country']}\n📞 ${addr['phone']}"),
+                );
+              }),
+              const SizedBox(height: 10),
+              Center(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.add, color: Color(0xff006876)),
+                  label: const Text("Add Address",
+                      style: TextStyle(color: Color(0xff006876))),
+                  onPressed: _addNewAddress,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              const Divider(),
+              const SizedBox(height: 10),
+
+              const Text("Payment Method",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff006876))),
+              const SizedBox(height: 8),
+
+              // 💳 Payment Options
+              _buildPaymentOption("PayPal", "assets/images/Logos/paypal.png"),
+              _buildPaymentOption("M-Pesa", "assets/images/Logos/mpesa.png"),
+              _buildPaymentOption("Apple Pay", "assets/images/Logos/apple.png"),
+              _buildPaymentOption(
+                  "Google Pay", "assets/images/Logos/google.png"),
+
+              const SizedBox(height: 25),
+
+              // 📦 Order Summary Card
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                elevation: 3,
+                child: Padding(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Order Summary",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff006876))),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Subtotal",
+                              style: TextStyle(fontSize: 16)),
+                          Text("\$${_totalAmount.toStringAsFixed(2)}"),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Delivery", style: TextStyle(fontSize: 16)),
+                          Text("Free"),
+                        ],
+                      ),
+                      const Divider(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Total",
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold)),
+                          Text("\$${_totalAmount.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff006876))),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _placeOrder,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xff006876),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text(
+                            "Pay",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
