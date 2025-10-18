@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final supabase = Supabase.instance.client;
+
 class TrackOrderPage extends StatefulWidget {
   final String orderId;
   const TrackOrderPage({super.key, required this.orderId});
@@ -10,133 +12,97 @@ class TrackOrderPage extends StatefulWidget {
 }
 
 class _TrackOrderPageState extends State<TrackOrderPage> {
-  bool _isLoading = true;
   Map<String, dynamic>? _order;
-  List<Map<String, dynamic>> _items = [];
-  Map<String, dynamic>? _address;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadOrderDetails();
+    _fetchOrder();
   }
 
-  Future<void> _loadOrderDetails() async {
+  Future<void> _fetchOrder() async {
     try {
-      // 🧾 Fetch order info
-      final orderData = await Supabase.instance.client
+      final data = await supabase
           .from('orders')
-          .select('*, addresses(*)')
+          .select('id, status, created_at, shipping_address_id')
           .eq('id', widget.orderId)
           .maybeSingle();
 
-      // 🛍 Fetch items
-      final itemData = await Supabase.instance.client
-          .from('order_items')
-          .select('quantity, unit_price, products(name, image_url)')
-          .eq('order_id', widget.orderId);
-
       setState(() {
-        _order = orderData;
-        _address = orderData?['addresses'];
-        _items = List<Map<String, dynamic>>.from(itemData);
-        _isLoading = false;
+        _order = data;
       });
     } catch (e) {
-      debugPrint("Error loading order: $e");
+      debugPrint("Error fetching order: $e");
+    } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  Widget _buildProgress(String status) {
-    final statuses = ['pending', 'shipped', 'delivered'];
-    final activeIndex = statuses.indexOf(status);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: statuses.map((s) {
-        final index = statuses.indexOf(s);
-        final isActive = index <= activeIndex;
-        return Column(
-          children: [
-            Icon(
-              isActive ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isActive ? Colors.green : Colors.grey,
-            ),
-            Text(s.toUpperCase(),
-                style: TextStyle(
-                    color: isActive ? Colors.green : Colors.grey,
-                    fontWeight:
-                    isActive ? FontWeight.bold : FontWeight.normal)),
-          ],
-        );
-      }).toList(),
+  Widget _buildProgressStep(String label, bool isActive) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 14,
+          backgroundColor: isActive ? Color(0xff006876) : Colors.grey[300],
+          child: Icon(isActive ? Icons.check : Icons.circle,
+              color: isActive ? Colors.white : Colors.grey[600], size: 16),
+        ),
+        const SizedBox(height: 6),
+        Text(label,
+            style: TextStyle(
+                color: isActive ? Color(0xff006876) : Colors.grey,
+                fontWeight: FontWeight.w600)),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (_order == null) {
-      return const Scaffold(
-        body: Center(child: Text("Order not found")),
-      );
-    }
+    final status = _order?['status'] ?? 'pending';
+    // define statuses progression
+    final steps = ['pending', 'shipped', 'delivered'];
 
     return Scaffold(
+      backgroundColor: const Color(0xfff5fafc),
       appBar: AppBar(
-        title: const Text("Track Order"),
-        centerTitle: true,
-        backgroundColor: const Color(0xff006876),
+        title: const Text(
+          "Track Order",
+          style: TextStyle(color: Color(0xff006876)),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xff006876)),
       ),
-      body: Padding(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView(
+        child: Column(
           children: [
-            Text(
-              "Order ID: ${_order!['id']}",
-              style:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text("Order #${widget.orderId}",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            // progress bar steps
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: steps.map((step) {
+                bool active = false;
+                if (status == 'pending' && step == 'pending') active = true;
+                else if (status == 'shipped' && (step == 'pending' || step == 'shipped'))
+                  active = true;
+                else if (status == 'delivered') active = true;
+
+                return _buildProgressStep(step.toUpperCase(), active);
+              }).toList(),
             ),
-            const SizedBox(height: 10),
-            _buildProgress(_order!['status'] ?? 'pending'),
-            const SizedBox(height: 20),
-            const Divider(),
-            const Text("Items:",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 10),
-            ..._items.map((item) {
-              final product = item['products'];
-              return ListTile(
-                leading: product['image_url'] != null
-                    ? Image.network(
-                  product['image_url'],
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                )
-                    : const Icon(Icons.image_not_supported),
-                title: Text(product['name']),
-                subtitle: Text(
-                    "${item['quantity']} × \$${item['unit_price'].toStringAsFixed(2)}"),
-              );
-            }),
-            const Divider(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 24),
+            const Text("Status Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
             Text(
-              "Shipping to: ${_address?['street']}, ${_address?['city']}, ${_address?['country']}",
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Total: \$${_order!['total_amount'].toStringAsFixed(2)}",
-              style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
+              "Your order is currently *${status.toUpperCase()}*.\nWe will notify you when the status changes.",
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

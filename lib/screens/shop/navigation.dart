@@ -101,7 +101,6 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // container to mimic the white rounded bar in the design
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),

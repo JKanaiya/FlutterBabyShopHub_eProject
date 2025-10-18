@@ -109,7 +109,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           color: Colors.black26,
                           blurRadius: 6,
                           offset: Offset(0, 3),
-                        )
+                        ),
                       ],
                     ),
                     child: Column(
@@ -121,14 +121,16 @@ class _SignUpPageState extends State<SignUpPage> {
                         TextField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration:
-                          const InputDecoration(labelText: "Password"),
+                          decoration: const InputDecoration(
+                            labelText: "Password",
+                          ),
                         ),
                         TextField(
                           controller: _confirmPasswordController,
                           obscureText: true,
                           decoration: const InputDecoration(
-                              labelText: "Confirm Password"),
+                            labelText: "Confirm Password",
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -144,8 +146,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           TextField(
                             controller: _adminKeyController,
                             obscureText: true,
-                            decoration:
-                            const InputDecoration(labelText: "Admin Key"),
+                            decoration: const InputDecoration(
+                              labelText: "Admin Key",
+                            ),
                           ),
                         const SizedBox(height: 20),
                         ElevatedButton(

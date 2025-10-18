@@ -62,7 +62,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/babyshoes.jpg
+    - assets/images/Logos/paypal.png
+    - assets/images/Logos/mpesa.png
+    - assets/images/Logos/apple.png
+    - assets/images/Logos/google.png
 
   fonts:
       - family: Ubuntu

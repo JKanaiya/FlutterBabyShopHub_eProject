@@ -59,7 +59,6 @@ class MyApp extends StatelessWidget {
         '/admin_home': (context) => const AdminHome(),
       },
 
-      // ✅ Dynamic Routes (with arguments)
       onGenerateRoute: (settings) {
         if (settings.name == '/product_detail') {
           final productId = settings.arguments as int;
@@ -95,9 +94,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-//
-// 🚀 Auth Gate – Decides whether to show AuthPage or ShopPage
-//
+
 class SplashOrAuthGate extends StatefulWidget {
   const SplashOrAuthGate({super.key});
 

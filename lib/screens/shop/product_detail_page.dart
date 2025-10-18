@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final supabase = Supabase.instance.client;
+
 class ProductDetailPage extends StatefulWidget {
   final int productId;
 
@@ -14,6 +16,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Map<String, dynamic>? _product;
   List<Map<String, dynamic>> _reviews = [];
   bool _isLoading = true;
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
@@ -23,21 +26,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _loadProductDetails() async {
     try {
-      final productData = await Supabase.instance.client
+      final productData = await supabase
           .from('products')
           .select('id, name, description, price, image_url')
           .eq('id', widget.productId)
-          .single();
+          .maybeSingle();
 
-      final reviewData = await Supabase.instance.client
-          .from('reviews')
-          .select('rating, comment, created_at, profiles(full_name)')
-          .eq('product_id', widget.productId)
-          .order('created_at', ascending: false);
+      final dummyReviews = [
+        {
+          'username': 'Grace W.',
+          'rating': 5,
+          'comment': 'Amazing quality! My baby loves this.',
+          'created_at': DateTime.now().subtract(const Duration(days: 1)),
+        },
+        {
+          'username': 'Peter N.',
+          'rating': 4,
+          'comment': 'Good product but delivery took a bit long.',
+          'created_at': DateTime.now().subtract(const Duration(days: 2)),
+        },
+        {
+          'username': 'Joy K.',
+          'rating': 5,
+          'comment': 'Super soft and great value for money!',
+          'created_at': DateTime.now().subtract(const Duration(days: 4)),
+        },
+      ];
 
       setState(() {
         _product = productData;
-        _reviews = List<Map<String, dynamic>>.from(reviewData);
+        _reviews = dummyReviews;
         _isLoading = false;
       });
     } catch (e) {
@@ -46,9 +64,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  Future<void> _addComment() async {
+    final comment = _commentController.text.trim();
+    if (comment.isEmpty) return;
+
+    final user = supabase.auth.currentUser;
+
+    setState(() {
+      _reviews.insert(0, {
+        'username': user?.email ?? 'Anonymous',
+        'rating': 5,
+        'comment': comment,
+        'created_at': DateTime.now(),
+      });
+      _commentController.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Comment added successfully!')),
+    );
+
+  }
+
   Future<void> _addToCart() async {
     try {
-      final user = Supabase.instance.client.auth.currentUser;
+      final user = supabase.auth.currentUser;
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to add to cart')),
@@ -56,8 +96,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         return;
       }
 
-      // 1️⃣ Get or create user's cart
-      final existingCart = await Supabase.instance.client
+      // Get or create cart
+      final existingCart = await supabase
           .from('carts')
           .select('id')
           .eq('user_id', user.id)
@@ -65,7 +105,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       String cartId;
       if (existingCart == null) {
-        final newCart = await Supabase.instance.client
+        final newCart = await supabase
             .from('carts')
             .insert({'user_id': user.id})
             .select('id')
@@ -75,42 +115,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         cartId = existingCart['id'];
       }
 
-      // 2️⃣ Check if this product already exists in cart
-      final existingItem = await Supabase.instance.client
-          .from('cart_items')
-          .select('id, quantity')
-          .eq('cart_id', cartId)
-          .eq('product_id', _product!['id'])
-          .maybeSingle();
-
-      if (existingItem != null) {
-        // 3️⃣ Update quantity if product already in cart
-        final newQty = (existingItem['quantity'] as int) + 1;
-        await Supabase.instance.client
-            .from('cart_items')
-            .update({'quantity': newQty})
-            .eq('id', existingItem['id']);
-      } else {
-        // 4️⃣ Insert new cart item
-        await Supabase.instance.client.from('cart_items').insert({
-          'cart_id': cartId,
-          'product_id': _product!['id'],
-          'quantity': 1,
-          'unit_price': _product!['price'],
-        });
-      }
+      // Add item
+      await supabase.from('cart_items').insert({
+        'cart_id': cartId,
+        'product_id': widget.productId,
+        'quantity': 1,
+        'unit_price': _product?['price'] ?? 0,
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Added to cart')),
+        const SnackBar(content: Text('Added to cart')),
       );
     } catch (e) {
       debugPrint("Add to cart failed: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Failed to add to cart: $e')),
+        const SnackBar(content: Text('Failed to add to cart')),
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -127,111 +149,203 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
 
     final imageUrl = _product!['image_url'] ??
-        'https://via.placeholder.com/150x150.png?text=No+Image';
+        'https://via.placeholder.com/300x300.png?text=No+Image';
 
     return Scaffold(
       backgroundColor: const Color(0xfff5fafc),
       appBar: AppBar(
+        title: Text(
+          _product!['name'] ?? '',
+          style: const TextStyle(
+            color: Color(0xff006876),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        automaticallyImplyLeading: true,
         iconTheme: const IconThemeData(color: Color(0xff006876)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.network(
-                imageUrl,
-                height: 250,
-                width: double.infinity,
-                fit: BoxFit.cover,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🖼 Product Image
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    imageUrl,
+                    height: 260,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _product!['name'] ?? '',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xff006876),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "\$${_product!['price']}",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _product!['description'] ?? "No description available.",
-              style: const TextStyle(fontSize: 15, color: Colors.black87),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Reviews",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xff006876),
-              ),
-            ),
-            const SizedBox(height: 10),
-            _reviews.isEmpty
-                ? const Text("No reviews yet")
-                : Column(
-              children: _reviews.map((r) {
-                return ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(r['profiles']['full_name'] ?? 'Anonymous'),
-                  subtitle: Text(r['comment'] ?? ''),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      5,
-                          (i) => Icon(
-                        i < (r['rating'] ?? 0)
-                            ? Icons.star
-                            : Icons.star_border,
-                        color: const Color(0xfffbc02d),
-                        size: 18,
+
+              const SizedBox(height: 16),
+
+              // 💲 Name + Price + Rating
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _product!['name'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                onPressed: _addToCart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff006876),
-                  foregroundColor: Colors.white,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 100, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  const Row(
+                    children: [
+                      Icon(Icons.star, color: Color(0xffffc107), size: 20),
+                      SizedBox(width: 4),
+                      Text("4.8",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+              Text(
+                "\$${_product!['price']}",
+                style: const TextStyle(
+                    fontSize: 20,
+                    color: Color(0xff006876),
+                    fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 10),
+
+              // 📄 Description
+              Text(
+                _product!['description'] ??
+                    'This is a high-quality baby product perfect for everyday use.',
+                style:
+                const TextStyle(fontSize: 15, color: Colors.black54, height: 1.5),
+              ),
+
+              const SizedBox(height: 20),
+
+              // 🛒 Add to Cart Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _addToCart,
+                  icon: const Icon(Icons.add_shopping_cart),
+                  label: const Text("Add to Cart"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff006876),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
-                child: const Text(
-                  "Add to Cart",
-                  style: TextStyle(fontSize: 16),
+              ),
+
+              const SizedBox(height: 30),
+
+              // ⭐ Reviews Section
+              const Text(
+                "Customer Reviews",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff006876),
                 ),
               ),
+              const SizedBox(height: 10),
+
+              ..._reviews.map((r) {
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.person, color: Colors.grey, size: 22),
+                            const SizedBox(width: 6),
+                            Text(
+                              r['username'] ?? 'User',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: List.generate(
+                                5,
+                                    (i) => Icon(
+                                  i < (r['rating'] ?? 0)
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: const Color(0xffffc107),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(r['comment'] ?? '',
+                            style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 6),
+                        Text(
+                          r['created_at']
+                              .toString()
+                              .split(' ')
+                              .first, // show only date
+                          style:
+                          const TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
+              const SizedBox(height: 80),
+            ],
+          ),
+        ),
+      ),
+
+      // ✍️ Comment Input Bar
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _commentController,
+                decoration: InputDecoration(
+                  hintText: "Write a comment...",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding:
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.send, color: Color(0xff006876)),
+              onPressed: _addComment,
             ),
           ],
         ),
