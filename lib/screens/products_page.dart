@@ -63,7 +63,6 @@ class _ProductsPageState extends State<ProductsPage> {
         query = query.ilike('name', '%$_searchQuery%');
       }
 
-      // ✅ fetch avg rating from reviews table via rpc or left join alternative
       final data = await query.order('created_at', ascending: false);
       setState(() {
         _products = List<Map<String, dynamic>>.from(data);

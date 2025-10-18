@@ -5,7 +5,6 @@ import '../shop/cart_page.dart';
 // import '../profile/profile_page.dart';
 import '../shop/search_page.dart';
 import '../shop/navigation.dart';
-import '../orders/order_history_page.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -21,7 +20,7 @@ class _ShopPageState extends State<ShopPage> {
     ProductsPage(),
     SearchPage(),
     CartPage(),
-    OrderHistoryPage(),
+    TrackOrderPage(orderId: ''),
     // ProfilePage(),
   ];
 

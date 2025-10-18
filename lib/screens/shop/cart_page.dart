@@ -14,7 +14,7 @@ class _CartPageState extends State<CartPage> {
   List<Map<String, dynamic>> _cartItems = [];
   bool _isLoading = true;
   double _total = 0.0;
-  String? _cartId; // ✅ store current user's cart ID
+  String? _cartId;
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _CartPageState extends State<CartPage> {
         return;
       }
 
-      _cartId = cart['id']; // ✅ save cartId
+      _cartId = cart['id'];
 
       final data = await supabase
           .from('cart_items')
@@ -118,7 +118,7 @@ class _CartPageState extends State<CartPage> {
     Navigator.pushNamed(
       context,
       '/checkout',
-      arguments: _cartId, // ✅ pass cartId to route
+      arguments: _cartId,
     );
   }
 

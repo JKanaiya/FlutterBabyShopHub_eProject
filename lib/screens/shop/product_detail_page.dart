@@ -32,7 +32,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           .eq('id', widget.productId)
           .maybeSingle();
 
-      // Dummy reviews (you can later replace this with a Supabase fetch)
       final dummyReviews = [
         {
           'username': 'Grace W.',
