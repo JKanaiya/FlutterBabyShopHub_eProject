@@ -20,7 +20,9 @@ class _AdminProductManageState extends State<AdminProductManage> {
         backgroundColor: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
         titleSpacing: 50,
         leading: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pop(context);
+          },
           icon: Icon(
             Icons.west,
             color: Theme.of(context).colorScheme.primary,

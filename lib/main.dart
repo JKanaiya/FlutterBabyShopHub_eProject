@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_home.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
@@ -20,7 +21,7 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://olovqmyqfrlatninpcue.supabase.co',
     anonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
   );
 
   runApp(const MyApp());
@@ -55,6 +56,7 @@ class MyApp extends StatelessWidget {
         '/products': (context) => const ProductsPage(),
         '/cart': (context) => const CartPage(),
         '/order_history': (context) => const OrderHistoryPage(),
+        '/admin_home': (context) => const AdminHome(),
       },
 
       // ✅ Dynamic Routes (with arguments)
@@ -114,16 +116,30 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
   }
 
   Future<void> _checkSession() async {
-    final session = Supabase.instance.client.auth.currentSession;
+    final session = supabase.auth.currentSession;
     setState(() {
       _isAuthenticated = session != null;
       _isLoading = false;
     });
 
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final user = await supabase.auth.getUser();
+    final email = user.user!.email.toString();
+
+    final response = await supabase
+        .from('profiles')
+        .select("id")
+        .eq("email", email)
+        .eq("is_admin", true)
+        .limit(1);
+
+    final isAdmin = response.isNotEmpty;
+
+    supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.signedIn) {
         Navigator.pushReplacementNamed(context, '/shop');
+      } else if (isAdmin) {
+        Navigator.pushReplacementNamed(context, '/admin_home');
       } else if (event == AuthChangeEvent.signedOut) {
         Navigator.pushReplacementNamed(context, '/auth');
       }
@@ -133,9 +149,7 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return _isAuthenticated ? const ShopPage() : const AuthPage();
