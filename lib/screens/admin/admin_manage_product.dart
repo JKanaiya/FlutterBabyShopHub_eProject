@@ -70,12 +70,12 @@ class _AdminProductManageState extends State<AdminProductManage> {
                   children: [
                     Expanded(
                       child: Image.asset(
-                        // TODO replace data here
+                        // TODO: replace data here
                         'assets/images/babyshoes.jpg',
                         fit: BoxFit.fill,
                       ),
                     ),
-                    // TODO replace data here
+                    // TODO: replace data here
                     const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
@@ -195,56 +195,102 @@ class _AdminProductManageState extends State<AdminProductManage> {
 
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
-                child: SizedBox(
+                child: Container(
                   height: screenHeight * 0.4,
+                  padding: EdgeInsets.symmetric(horizontal: 30),
+
                   child: ListView(
                     children: [
-                      ListTile(
-                        leading: Icon(Icons.person_2_outlined),
-                        // TODO replace with data
-                        trailing: SizedBox(
-                          width: 100,
-                          child: Row(
-                            children: [
-                              Text("4.9"),
-                              Icon(Icons.star_half_rounded),
-                            ],
+                      Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(Icons.person_2_outlined),
+                            // TODO replace with data
+                            contentPadding: EdgeInsets.only(right: 0.0),
+                            trailing: SizedBox(
+                              width: 100,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '4.9',
+                                    style: TextStyle(
+                                      fontFamily: "ubuntu",
+                                      fontSize: 18,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.star_half_rounded,
+                                    size: 25,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            title: Text(
+                              "Jane Doe",
+                              style: Theme.of(context).textTheme.labelSmall!
+                                  .copyWith(fontFamily: "ubuntu"),
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          "Jane Doe",
-                          style: Theme.of(context).textTheme.labelSmall!
-                              .copyWith(fontFamily: "ubuntu"),
-                        ),
-                        subtitle: Text(
-                          "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
-                          style: Theme.of(context).textTheme.bodyMedium!
-                              .copyWith(fontFamily: "ubuntu"),
-                        ),
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.person_2_outlined),
-                        // TODO replace with data
-                        trailing: SizedBox(
-                          width: 100,
-                          child: Row(
-                            children: [
-                              Text("4.9"),
-                              Icon(Icons.star_half_rounded),
-                            ],
+                          Text(
+                            "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(fontFamily: "ubuntu"),
                           ),
-                        ),
-                        title: Text(
-                          "Jane Doe",
-                          style: Theme.of(context).textTheme.labelSmall!
-                              .copyWith(fontFamily: "ubuntu"),
-                        ),
-                        subtitle: Text(
-                          "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
-                          style: Theme.of(context).textTheme.bodyMedium!
-                              .copyWith(fontFamily: "ubuntu"),
-                        ),
+                        ],
                       ),
+                      const SizedBox(height: 20),
+                      Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(Icons.person_2_outlined),
+                            // TODO replace with data
+                            contentPadding: EdgeInsets.only(right: 0.0),
+                            trailing: SizedBox(
+                              width: 100,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '4.9',
+                                    style: TextStyle(
+                                      fontFamily: "ubuntu",
+                                      fontSize: 18,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.star_half_rounded,
+                                    size: 25,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            title: Text(
+                              "Jane Doe",
+                              style: Theme.of(context).textTheme.labelSmall!
+                                  .copyWith(fontFamily: "ubuntu"),
+                            ),
+                          ),
+                          Text(
+                            "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(fontFamily: "ubuntu"),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
                       ListTile(
                         leading: Icon(Icons.person_2_outlined),
                         title: TextField(
