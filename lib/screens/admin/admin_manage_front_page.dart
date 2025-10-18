@@ -26,7 +26,9 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
     ];
 
     final downloadFutures = splashImages.map((image) async {
-      return await supabase.storage.from('product-images').download(image);
+      return await supabase.storage
+          .from('product-images/Splash Screen')
+          .download(image);
     }).toList();
 
     try {
