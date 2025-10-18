@@ -203,6 +203,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                     children: [
                       Column(
                         children: [
+                          const SizedBox(height: 20),
                           ListTile(
                             leading: Icon(Icons.person_2_outlined),
                             // TODO replace with data
@@ -245,9 +246,9 @@ class _AdminProductManageState extends State<AdminProductManage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
                       Column(
                         children: [
+                          const SizedBox(height: 20),
                           ListTile(
                             leading: Icon(Icons.person_2_outlined),
                             // TODO replace with data
@@ -290,15 +291,41 @@ class _AdminProductManageState extends State<AdminProductManage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      ListTile(
-                        leading: Icon(Icons.person_2_outlined),
-                        title: TextField(
-                          decoration: InputDecoration(hintText: "Add Comment"),
-                        ),
-                        trailing: Icon(Icons.north_outlined),
-                      ),
                     ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                title: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Add Comment",
+                      border: InputBorder.none,
+                    ),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+                trailing: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 2.0,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    color: Theme.of(context).colorScheme.primary,
+                    icon: Icon(Icons.north_outlined),
+                    // TODO: Implement addComment on product
+                    onPressed: () {},
                   ),
                 ),
               ),
