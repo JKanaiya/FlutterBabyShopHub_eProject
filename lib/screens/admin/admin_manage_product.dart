@@ -19,22 +19,20 @@ class _AdminProductManageState extends State<AdminProductManage> {
       appBar: AppBar(
         backgroundColor: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
         titleSpacing: 50,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.close_rounded,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+        leading: IconButton(
+          onPressed: () {},
+          icon: Icon(
+            Icons.west,
+            color: Theme.of(context).colorScheme.primary,
+            size: 30,
           ),
-        ],
-        toolbarHeight: 100,
+        ),
+        toolbarHeight: 80,
         title: Text(
           "Baby Shoes",
           selectionColor: Theme.of(context).colorScheme.primary,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.headlineMedium!.copyWith(
             color: Theme.of(context).colorScheme.primary,
-            fontSize: 35,
           ),
         ),
       ),
@@ -297,6 +295,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
               ),
               const SizedBox(height: 20),
               ListTile(
+                contentPadding: EdgeInsets.only(right: 0.0),
                 title: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -319,9 +318,12 @@ class _AdminProductManageState extends State<AdminProductManage> {
                       width: 2.0,
                       color: Theme.of(context).colorScheme.primary,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(50),
                   ),
                   child: IconButton(
+                    hoverColor: Theme.of(
+                      context,
+                    ).colorScheme.secondaryContainer,
                     color: Theme.of(context).colorScheme.primary,
                     icon: Icon(Icons.north_outlined),
                     // TODO: Implement addComment on product
