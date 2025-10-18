@@ -2,7 +2,7 @@ import 'package:babyshophub/screens/orders/track_order_page.dart';
 import 'package:flutter/material.dart';
 import '../products_page.dart';
 import '../shop/cart_page.dart';
-// import '../profile/profile_page.dart';
+import '../profile/profile_page.dart';
 import '../shop/search_page.dart';
 import '../shop/navigation.dart';
 
@@ -21,7 +21,7 @@ class _ShopPageState extends State<ShopPage> {
     SearchPage(),
     CartPage(),
     TrackOrderPage(orderId: ''),
-    // ProfilePage(),
+    ProfilePage(),
   ];
 
   void _onNavTap(int index) {
