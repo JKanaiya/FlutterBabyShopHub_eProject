@@ -49,6 +49,54 @@ class _AdminProductManageState extends State<AdminProductManage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    Future<void> _addToCart(Map<String, dynamic> product) async {
+      try {
+        final user = supabase.auth.currentUser;
+        if (user == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please log in to add items to cart')),
+          );
+          return;
+        }
+
+        // Get or create a cart for this user
+        final existingCart = await supabase
+            .from('carts')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+        String cartId;
+        if (existingCart == null) {
+          final newCart = await supabase
+              .from('carts')
+              .insert({'user_id': user.id})
+              .select('id')
+              .single();
+          cartId = newCart['id'];
+        } else {
+          cartId = existingCart['id'];
+        }
+
+        // Add or update item
+        await supabase.from('cart_items').insert({
+          'cart_id': cartId,
+          'product_id': product['id'],
+          'quantity': 1,
+          'unit_price': product['price'],
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${product['name']} added to cart!')),
+        );
+      } catch (e) {
+        debugPrint('Add to cart failed: $e');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to add to cart')));
+      }
+    }
+
     final imageUrl =
         _product?['image_url'] ??
         'https://via.placeholder.com/300x300.png?text=No+Image';
@@ -195,7 +243,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () => _addToCart(_product!),
                               child: const Text(
                                 "Add to Cart",
                                 style: TextStyle(fontFamily: "ubuntu"),
