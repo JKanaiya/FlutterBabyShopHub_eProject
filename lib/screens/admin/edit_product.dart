@@ -4,11 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class EditProduct extends StatefulWidget {
-<<<<<<< HEAD
-  final int section;
-  final String text;
-  const EditProduct({super.key, required this.section, required this.text});
-=======
   final double price;
   final int id;
   final String description;
@@ -20,7 +15,6 @@ class EditProduct extends StatefulWidget {
     required this.id,
     required this.name,
   });
->>>>>>> admin_product_edit
 
   @override
   State<EditProduct> createState() => _EditProductState();
@@ -28,13 +22,9 @@ class EditProduct extends StatefulWidget {
 
 class _EditProductState extends State<EditProduct> {
   File? _imageFile;
-<<<<<<< HEAD
-  final textController = TextEditingController();
-=======
   final priceTextController = TextEditingController();
   final descriptionController = TextEditingController();
   final nameController = TextEditingController();
->>>>>>> admin_product_edit
 
   Future pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -49,33 +39,6 @@ class _EditProductState extends State<EditProduct> {
   }
 
   Future uploadData() async {
-<<<<<<< HEAD
-    if (_imageFile == null && textController.text == widget.text) return;
-
-    if (_imageFile != null) {
-      await supabase.storage
-          .from('product-images')
-          .update("Splash Screen/splashscreen${widget.section}", _imageFile!)
-          .then(
-            (value) => {
-              if (mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Section updated successfully!"),
-                  ),
-                ),
-            },
-          );
-    }
-
-    if (textController.text != widget.text) {
-      await supabase
-          .from('app_data_upserts')
-          .update({'sectionText': textController.text})
-          .eq("section", widget.section);
-    }
-    if (mounted) Navigator.pop(context);
-=======
     if (_imageFile == null &&
         descriptionController.text == widget.description &&
         priceTextController.text == widget.price) {
@@ -134,16 +97,11 @@ class _EditProductState extends State<EditProduct> {
           },
       },
     );
->>>>>>> admin_product_edit
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-<<<<<<< HEAD
-    final screenWidth = MediaQuery.of(context).size.width;
-=======
->>>>>>> admin_product_edit
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -169,11 +127,7 @@ class _EditProductState extends State<EditProduct> {
           children: [
             ListTile(
               title: Text(
-<<<<<<< HEAD
-                "Update Product ${widget.section}",
-=======
                 "Update Product",
->>>>>>> admin_product_edit
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -222,11 +176,7 @@ class _EditProductState extends State<EditProduct> {
               ),
               child: TextField(
                 decoration: InputDecoration(
-<<<<<<< HEAD
-                  hintText: widget.text,
-=======
                   hintText: widget.name,
->>>>>>> admin_product_edit
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -237,9 +187,6 @@ class _EditProductState extends State<EditProduct> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
-<<<<<<< HEAD
-                controller: textController,
-=======
                 controller: nameController,
               ),
             ),
@@ -285,7 +232,6 @@ class _EditProductState extends State<EditProduct> {
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
                 controller: descriptionController,
->>>>>>> admin_product_edit
               ),
             ),
             Center(
