@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_manage_product.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:babyshophub/main.dart';
@@ -265,10 +266,13 @@ class _AdminProductsState extends State<AdminProducts> {
 
                               return GestureDetector(
                                 onTap: () {
-                                  Navigator.pushNamed(
+                                  Navigator.pushReplacement(
                                     context,
-                                    '/product_detail',
-                                    arguments: product['id'],
+                                    MaterialPageRoute(
+                                      builder: (_) => AdminProductManage(
+                                        productId: product['id'],
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: Card(
@@ -336,6 +340,20 @@ class _AdminProductsState extends State<AdminProducts> {
                                               ),
                                             ),
                                           ),
+                                          // Positioned(
+                                          //   top: 2,
+                                          //   left: 2,
+                                          //   child: IconButton(
+                                          //     onPressed: () {},
+                                          //     icon: Icon(
+                                          //       Icons.edit,
+                                          //       color: Theme.of(
+                                          //         context,
+                                          //       ).colorScheme.primary,
+                                          //       size: 30,
+                                          //     ),
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                       // 🏷 Product info

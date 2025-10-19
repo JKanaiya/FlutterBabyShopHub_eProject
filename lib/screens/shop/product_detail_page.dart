@@ -70,6 +70,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final user = supabase.auth.currentUser;
 
+    // TODO: replace with actual functionality
     setState(() {
       _reviews.insert(0, {
         'username': user?.email ?? 'Anonymous',
@@ -83,7 +84,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Comment added successfully!')),
     );
-
   }
 
   Future<void> _addToCart() async {
@@ -123,32 +123,29 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         'unit_price': _product?['price'] ?? 0,
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Added to cart')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Added to cart')));
     } catch (e) {
       debugPrint("Add to cart failed: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add to cart')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to add to cart')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_product == null) {
-      return const Scaffold(
-        body: Center(child: Text("Product not found")),
-      );
+      return const Scaffold(body: Center(child: Text("Product not found")));
     }
 
-    final imageUrl = _product!['image_url'] ??
+    final imageUrl =
+        _product!['image_url'] ??
         'https://via.placeholder.com/300x300.png?text=No+Image';
 
     return Scaffold(
@@ -204,9 +201,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       Icon(Icons.star, color: Color(0xffffc107), size: 20),
                       SizedBox(width: 4),
-                      Text("4.8",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        "4.8",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -216,9 +217,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Text(
                 "\$${_product!['price']}",
                 style: const TextStyle(
-                    fontSize: 20,
-                    color: Color(0xff006876),
-                    fontWeight: FontWeight.bold),
+                  fontSize: 20,
+                  color: Color(0xff006876),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 10),
@@ -227,8 +229,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Text(
                 _product!['description'] ??
                     'This is a high-quality baby product perfect for everyday use.',
-                style:
-                const TextStyle(fontSize: 15, color: Colors.black54, height: 1.5),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                  height: 1.5,
+                ),
               ),
 
               const SizedBox(height: 20),
@@ -245,7 +250,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -267,7 +273,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
@@ -275,18 +282,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.person, color: Colors.grey, size: 22),
+                            const Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                              size: 22,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               r['username'] ?? 'User',
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
                             ),
                             const Spacer(),
                             Row(
                               children: List.generate(
                                 5,
-                                    (i) => Icon(
+                                (i) => Icon(
                                   i < (r['rating'] ?? 0)
                                       ? Icons.star
                                       : Icons.star_border,
@@ -298,16 +311,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text(r['comment'] ?? '',
-                            style: const TextStyle(fontSize: 14)),
+                        Text(
+                          r['comment'] ?? '',
+                          style: const TextStyle(fontSize: 14),
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           r['created_at']
                               .toString()
                               .split(' ')
                               .first, // show only date
-                          style:
-                          const TextStyle(color: Colors.grey, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -337,8 +354,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 16,
+                  ),
                 ),
               ),
             ),

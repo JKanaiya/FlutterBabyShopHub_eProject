@@ -53,6 +53,9 @@ It includes features for product browsing, shopping cart management, order place
 | **Admin Home Page** | Dashboard for managing products and orders |
 
 ---
+## Mock-Up
+<img width="1920" height="1440" alt="BabyShots" src="https://github.com/user-attachments/assets/b811ad61-abf1-4ee1-9d2e-e03739428277" />
+
 
 ## ⚙️ Project Setup
 
