@@ -130,22 +130,19 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
 
     final isAdmin = response.isNotEmpty;
 
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => isAdmin ? const AdminHome() : const ShopPage(),
+        ),
+        (route) => false,
+      );
+    }
+
     // ✅ Listen for auth state changes globally
     supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       final session = data.session;
-
-      final user = await supabase.auth.getUser();
-      final email = user.user!.email.toString();
-
-      final response = await supabase
-          .from('profiles')
-          .select("id")
-          .eq("email", email)
-          .eq("is_admin", true)
-          .limit(1);
-
-      final isAdmin = response.isNotEmpty;
 
       if (!mounted) return;
 
