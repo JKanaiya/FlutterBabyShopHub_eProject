@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../products_page.dart';
+import '../shop/shop_page.dart'; //
 
 class SignInPage extends StatefulWidget {
   final VoidCallback onRegisterClicked;
@@ -32,9 +32,10 @@ class _SignInPageState extends State<SignInPage> {
           .signInWithPassword(email: email, password: password);
 
       if (res.user != null) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const ProductsPage()),
+          MaterialPageRoute(builder: (_) => const ShopPage()),
+              (route) => false,
         );
       } else {
         _showMsg("Invalid credentials");
@@ -42,7 +43,7 @@ class _SignInPageState extends State<SignInPage> {
     } on AuthException catch (e) {
       _showMsg(e.message);
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -101,8 +102,7 @@ class _SignInPageState extends State<SignInPage> {
                         TextField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration:
-                          const InputDecoration(labelText: "Password"),
+                          decoration: const InputDecoration(labelText: "Password"),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
@@ -125,7 +125,6 @@ class _SignInPageState extends State<SignInPage> {
                 ],
               ),
             ),
-            // ❌ close icon
             Positioned(
               top: 40,
               right: 20,
