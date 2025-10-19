@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-class EditSection extends StatefulWidget {
+class EditProduct extends StatefulWidget {
   final int section;
   final String text;
-  const EditSection({super.key, required this.section, required this.text});
+  const EditProduct({super.key, required this.section, required this.text});
 
   @override
-  State<EditSection> createState() => _EditSectionState();
+  State<EditProduct> createState() => _EditProductState();
 }
 
-class _EditSectionState extends State<EditSection> {
+class _EditProductState extends State<EditProduct> {
   File? _imageFile;
   final textController = TextEditingController();
 
@@ -39,7 +39,9 @@ class _EditSectionState extends State<EditSection> {
             (value) => {
               if (mounted)
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Image updated successfully!")),
+                  const SnackBar(
+                    content: Text("Section updated successfully!"),
+                  ),
                 ),
             },
           );
@@ -57,6 +59,7 @@ class _EditSectionState extends State<EditSection> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -68,7 +71,7 @@ class _EditSectionState extends State<EditSection> {
           ),
         ),
         title: Text(
-          "Edit Section",
+          "Edit Product",
           style: Theme.of(context).textTheme.headlineMedium!.copyWith(
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -82,7 +85,7 @@ class _EditSectionState extends State<EditSection> {
           children: [
             ListTile(
               title: Text(
-                "Update Section ${widget.section}",
+                "Update Product ${widget.section}",
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
