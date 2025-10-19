@@ -4,9 +4,23 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class EditProduct extends StatefulWidget {
+<<<<<<< HEAD
   final int section;
   final String text;
   const EditProduct({super.key, required this.section, required this.text});
+=======
+  final double price;
+  final int id;
+  final String description;
+  final String name;
+  const EditProduct({
+    super.key,
+    required this.price,
+    required this.description,
+    required this.id,
+    required this.name,
+  });
+>>>>>>> admin_product_edit
 
   @override
   State<EditProduct> createState() => _EditProductState();
@@ -14,7 +28,13 @@ class EditProduct extends StatefulWidget {
 
 class _EditProductState extends State<EditProduct> {
   File? _imageFile;
+<<<<<<< HEAD
   final textController = TextEditingController();
+=======
+  final priceTextController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final nameController = TextEditingController();
+>>>>>>> admin_product_edit
 
   Future pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -29,6 +49,7 @@ class _EditProductState extends State<EditProduct> {
   }
 
   Future uploadData() async {
+<<<<<<< HEAD
     if (_imageFile == null && textController.text == widget.text) return;
 
     if (_imageFile != null) {
@@ -54,12 +75,75 @@ class _EditProductState extends State<EditProduct> {
           .eq("section", widget.section);
     }
     if (mounted) Navigator.pop(context);
+=======
+    if (_imageFile == null &&
+        descriptionController.text == widget.description &&
+        priceTextController.text == widget.price) {
+      return;
+    }
+
+    final futures = <Future>[];
+
+    if (_imageFile != null) {
+      futures.add(
+        supabase
+            .from('products')
+            .update({'image_url': _imageFile})
+            .eq("id", widget.id),
+      );
+    }
+
+    if (descriptionController.text.isNotEmpty &&
+        descriptionController.text != widget.description) {
+      futures.add(
+        supabase
+            .from('products')
+            .update({'description': descriptionController.text})
+            .eq("id", widget.id),
+      );
+    }
+
+    if (nameController.text.isNotEmpty && nameController.text != widget.name) {
+      futures.add(
+        supabase
+            .from('products')
+            .update({'name': nameController.text})
+            .eq("id", widget.id),
+      );
+    }
+
+    if (priceTextController.text.isNotEmpty &&
+        priceTextController.text != widget.price.toString()) {
+      futures.add(
+        supabase
+            .from('products')
+            .update({'price': priceTextController.text})
+            .eq("id", widget.id),
+      );
+    }
+
+    // Wait for all futures to complete, then show snackbar
+    await Future.wait(futures).then(
+      (value) => {
+        if (mounted)
+          {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Section updated successfully!")),
+            ),
+            Navigator.pop(context),
+          },
+      },
+    );
+>>>>>>> admin_product_edit
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+<<<<<<< HEAD
     final screenWidth = MediaQuery.of(context).size.width;
+=======
+>>>>>>> admin_product_edit
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -85,7 +169,11 @@ class _EditProductState extends State<EditProduct> {
           children: [
             ListTile(
               title: Text(
+<<<<<<< HEAD
                 "Update Product ${widget.section}",
+=======
+                "Update Product",
+>>>>>>> admin_product_edit
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -134,7 +222,11 @@ class _EditProductState extends State<EditProduct> {
               ),
               child: TextField(
                 decoration: InputDecoration(
+<<<<<<< HEAD
                   hintText: widget.text,
+=======
+                  hintText: widget.name,
+>>>>>>> admin_product_edit
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -145,7 +237,55 @@ class _EditProductState extends State<EditProduct> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
+<<<<<<< HEAD
                 controller: textController,
+=======
+                controller: nameController,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: widget.price.toString(),
+                  hintStyle: TextStyle(
+                    fontFamily: 'ubuntu',
+                    color: Theme.of(context).colorScheme.onTertiaryContainer,
+                    fontSize: 17,
+                  ),
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+                controller: priceTextController,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: widget.description,
+                  hintStyle: TextStyle(
+                    fontFamily: 'ubuntu',
+                    color: Theme.of(context).colorScheme.onTertiaryContainer,
+                    fontSize: 17,
+                  ),
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+                controller: descriptionController,
+>>>>>>> admin_product_edit
               ),
             ),
             Center(

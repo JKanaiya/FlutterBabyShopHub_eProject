@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/edit_product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:babyshophub/main.dart';
@@ -118,7 +119,19 @@ class _AdminProductManageState extends State<AdminProductManage> {
         toolbarHeight: 80,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditProduct(
+                    price: _product?['price'],
+                    description: _product?['description'],
+                    id: _product?['id'],
+                    name: _product?['name'],
+                  ),
+                ),
+              );
+            },
             icon: Icon(
               Icons.edit,
               color: Theme.of(context).colorScheme.primary,
@@ -127,7 +140,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
           ),
         ],
         title: Text(
-          "Baby Shoes",
+          _product?['name'],
           selectionColor: Theme.of(context).colorScheme.primary,
           style: Theme.of(context).textTheme.headlineMedium!.copyWith(
             color: Theme.of(context).colorScheme.primary,
