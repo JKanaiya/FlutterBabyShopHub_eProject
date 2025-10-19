@@ -22,7 +22,7 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://olovqmyqfrlatninpcue.supabase.co',
     anonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
   );
 
   runApp(const MyApp());
@@ -117,36 +117,52 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
       _isLoading = false;
     });
 
+    final user = await supabase.auth.getUser();
+
+    final email = user.user!.email.toString();
+
+    final response = await supabase
+        .from('profiles')
+        .select("id")
+        .eq("email", email)
+        .eq("is_admin", true)
+        .limit(1);
+
+    final isAdmin = response.isNotEmpty;
+
     // ✅ Listen for auth state changes globally
     supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       final session = data.session;
 
+      final user = await supabase.auth.getUser();
+      final email = user.user!.email.toString();
+
+      final response = await supabase
+          .from('profiles')
+          .select("id")
+          .eq("email", email)
+          .eq("is_admin", true)
+          .limit(1);
+
+      final isAdmin = response.isNotEmpty;
+
       if (!mounted) return;
 
       if (event == AuthChangeEvent.signedIn && session != null) {
-        // Check if user is admin
-        final user = session.user;
-        final response = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', user.id)
-            .maybeSingle();
-
-        final isAdmin = response != null && response['is_admin'] == true;
-
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
-                builder: (_) => isAdmin ? const AdminHome() : const ShopPage()),
-                (route) => false,
+              builder: (_) => isAdmin ? const AdminHome() : const ShopPage(),
+            ),
+            (route) => false,
           );
         }
       } else if (event == AuthChangeEvent.signedOut) {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const AuthPage()),
-                (route) => false,
+            (route) => false,
           );
         }
       }
