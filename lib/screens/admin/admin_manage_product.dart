@@ -1,20 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:babyshophub/main.dart';
 
 class AdminProductManage extends StatefulWidget {
-  AdminProductManage({super.key});
-  // AdminProducts({super.key, this.product});
-  var product;
+  final int productId;
+  AdminProductManage({super.key, required this.productId});
 
   @override
   State<AdminProductManage> createState() => _AdminProductManageState();
 }
 
 class _AdminProductManageState extends State<AdminProductManage> {
+  Map<String, dynamic>? _product;
+  List<Map<String, dynamic>> _reviews = [];
+  bool _isLoading = true;
+  final TextEditingController _commentController = TextEditingController();
+
+  Future<void> _loadProductDetails() async {
+    try {
+      final productData = await supabase
+          .from('products')
+          .select('id, name, description, price, image_url')
+          .eq('id', widget.productId)
+          .maybeSingle();
+
+      setState(() {
+        _product = productData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error loading product details: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProductDetails();
+  }
+
   @override
   // TODO: replace the text with the product data from supabase
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final imageUrl =
+        _product?['image_url'] ??
+        'https://via.placeholder.com/300x300.png?text=No+Image';
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
@@ -30,6 +68,16 @@ class _AdminProductManageState extends State<AdminProductManage> {
           ),
         ),
         toolbarHeight: 80,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(
+              Icons.edit,
+              color: Theme.of(context).colorScheme.primary,
+              size: 30,
+            ),
+          ),
+        ],
         title: Text(
           "Baby Shoes",
           selectionColor: Theme.of(context).colorScheme.primary,
@@ -68,14 +116,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 height: 500,
                 child: Column(
                   children: [
-                    Expanded(
-                      child: Image.asset(
-                        // TODO: replace data here
-                        'assets/images/babyshoes.jpg',
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                    // TODO: replace data here
+                    Expanded(child: Image.network(imageUrl, fit: BoxFit.fill)),
                     const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
@@ -92,7 +133,8 @@ class _AdminProductManageState extends State<AdminProductManage> {
                       child: Column(
                         children: [
                           Text(
-                            "These delightful baby shoes are designed with ultimate comfort in mind. Crafted from soft, breathable organic cotton and featuring a flexible, non-slip suede sole, they allow for natural foot movement, which is crucial for developing feet. They're lightweight, machine washable, and so cozy, your little one will barely notice they're wearing them.",
+                            _product?['description'] ??
+                                'This is a high-quality baby product perfect for everyday use.',
                             style: TextStyle(
                               fontFamily: "ubuntu",
                               fontSize: 12,
@@ -101,7 +143,6 @@ class _AdminProductManageState extends State<AdminProductManage> {
                           ),
                           const SizedBox(height: 20),
                           Row(
-                            // TODO replace data here
                             children: [
                               Text(
                                 '4.9',
@@ -130,9 +171,8 @@ class _AdminProductManageState extends State<AdminProductManage> {
                           ),
                           ListTile(
                             contentPadding: EdgeInsets.only(right: 0.0),
-                            // TODO replace data here
                             leading: Text(
-                              "\$13.50",
+                              "\$${_product?['price']}",
                               style: Theme.of(context).textTheme.headlineSmall!
                                   .copyWith(
                                     fontFamily: "ubuntu",
@@ -177,7 +217,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 ),
               ),
               const SizedBox(height: 30),
-              // TODO replace with builder when real data is fetchable
+              // TODO: replace with builder when real data is fetchable
               Container(
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -307,6 +347,11 @@ class _AdminProductManageState extends State<AdminProductManage> {
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: "Add Comment",
+                      hintStyle: TextStyle(
+                        fontFamily: 'ubuntu',
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontSize: 15,
+                      ),
                       border: InputBorder.none,
                     ),
                     style: TextStyle(

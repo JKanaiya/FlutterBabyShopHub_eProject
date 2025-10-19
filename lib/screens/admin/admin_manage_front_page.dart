@@ -97,7 +97,11 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                           ),
                         );
                       },
-                      icon: Icon(Icons.edit),
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        size: 40,
+                      ),
                     ),
                   ),
                   Positioned(
@@ -136,7 +140,7 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                           context,
                           // TODO: Add proper functionality to navigate to the appt page here
                           MaterialPageRoute(
-                            builder: (context) => AdminProductManage(),
+                            builder: (context) => AdminProducts(),
                           ),
                         );
                       },
@@ -188,6 +192,26 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                     ),
                   ),
                   Positioned(
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditSection(
+                              section: 2,
+                              text: getValueByKey(2)!,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        size: 40,
+                      ),
+                    ),
+                  ),
+                  Positioned(
                     bottom: 70,
                     right: 100,
                     child: ElevatedButton(
@@ -219,82 +243,111 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                 ],
               ),
               Expanded(
-                child: Row(
+                child: Stack(
                   children: [
-                    Expanded(
-                      flex: 3,
-                      child: Container(
-                        padding: EdgeInsets.all(60),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSecondaryContainer,
-                        child: Flex(
-                          direction: Axis.vertical,
-                          children: [
-                            Title(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              child: Text(
-                                getValueByKey(3) ??
-                                    // Default value is the apps initial section 1 page text
-                                    'Clothing for Comfort. Anywhere, Everywhere',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall!
-                                    .copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimary,
-                                    ),
-                              ),
-                            ),
-                            const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 3,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.tertiary,
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onTertiary,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AdminProducts(),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            padding: EdgeInsets.all(60),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSecondaryContainer,
+                            child: Flex(
+                              direction: Axis.vertical,
+                              children: [
+                                Title(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  child: Text(
+                                    getValueByKey(3) ??
+                                        // Default value is the apps initial section 1 page text
+                                        'Clothing for Comfort. Anywhere, Everywhere',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall!
+                                        .copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary,
+                                        ),
                                   ),
-                                );
-                              },
-                              child: SizedBox(
-                                width: 100,
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "Shop now",
-                                      style: TextStyle(
-                                        fontFamily: "ubuntu",
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Icon(Icons.north_east),
-                                  ],
                                 ),
+                                const Spacer(),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 3,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.onTertiary,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AdminProducts(),
+                                      ),
+                                    );
+                                  },
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          "Shop now",
+                                          style: TextStyle(
+                                            fontFamily: "ubuntu",
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Icon(Icons.north_east),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: SizedBox(
+                            height: double.infinity,
+                            child: Image.memory(
+                              _splashImageBytes![2],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Positioned(
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            // TODO: Add proper functionality to navigate to the appt page here
+                            MaterialPageRoute(
+                              builder: (context) => EditSection(
+                                section: 3,
+                                text: getValueByKey(3)!,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: SizedBox(
-                        height: double.infinity,
-                        child: Image.memory(
-                          _splashImageBytes![2],
-                          fit: BoxFit.cover,
+                          );
+                        },
+                        icon: Icon(
+                          Icons.edit,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondaryContainer,
+                          size: 40,
                         ),
                       ),
                     ),

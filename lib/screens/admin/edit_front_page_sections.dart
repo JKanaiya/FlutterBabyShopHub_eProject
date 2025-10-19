@@ -51,13 +51,20 @@ class _EditSectionState extends State<EditSection> {
           .update({'sectionText': textController.text})
           .eq("section", widget.section);
     }
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Section")),
+      appBar: AppBar(
+        title: Text(
+          "Edit Section",
+          style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
       body: Column(
         children: [
           Text("Update Section ${widget.section} image"),
@@ -72,7 +79,7 @@ class _EditSectionState extends State<EditSection> {
           ),
           ElevatedButton(
             onPressed: uploadData,
-            child: const Text("Update Date"),
+            child: const Text("Update Data"),
           ),
         ],
       ),
