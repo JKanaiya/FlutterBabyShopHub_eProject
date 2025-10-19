@@ -229,7 +229,6 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                     ).colorScheme.tertiary,
                                   ),
                             ),
-                            // TODO replace functionality here
                             trailing: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(
