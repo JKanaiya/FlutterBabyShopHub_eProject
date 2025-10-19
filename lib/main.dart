@@ -146,6 +146,7 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
 
       if (!mounted) return;
 
+      // WARN: This code is questionable rn
       if (event == AuthChangeEvent.signedIn && session != null) {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(

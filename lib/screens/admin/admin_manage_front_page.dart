@@ -17,6 +17,17 @@ class AdminManageFrontPage extends StatefulWidget {
 class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
   // TODO: Add a method and var to hold the splash screen text
   List<Uint8List>? _splashImageBytes;
+  List<Map<int, String>>? _splashText;
+
+  Future<void> _loadSplashText() async {
+    final response = await supabase
+        .from('app_data_upserts')
+        .select("section, sectionText");
+
+    _splashText = (response as List)
+        .map((row) => {row['section'] as int: row['sectionText'] as String})
+        .toList();
+  }
 
   Future<void> _loadSplashImages() async {
     final splashImages = [
@@ -33,7 +44,6 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
 
     try {
       var images = await Future.wait(downloadFutures);
-
       //  Set the state to trigger a rebuild with the downloaded data
       setState(() {
         _splashImageBytes = images;
@@ -47,8 +57,8 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
   @override
   void initState() {
     super.initState();
-    // Start the loading process
     _loadSplashImages();
+    _loadSplashText();
   }
 
   @override
@@ -79,7 +89,10 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                       child: Title(
                         color: Theme.of(context).colorScheme.primary,
                         child: Text(
-                          "Find a Bundle for your Joy",
+                          _splashText != null && _splashText!.isNotEmpty
+                              ? _splashText![0].values.first
+                              // Default value is the apps initial section 1 page text
+                              : 'Find a Bundle for your Joy.',
                           style: Theme.of(context).textTheme.displaySmall!
                               .copyWith(
                                 color: Theme.of(
@@ -144,7 +157,10 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                       child: Title(
                         color: Theme.of(context).colorScheme.primary,
                         child: Text(
-                          "Winter Party Up to 50% off",
+                          _splashText != null && _splashText!.isNotEmpty
+                              ? _splashText![1].values.first
+                              // Default value is the apps initial section 2 page text
+                              : 'Winter party up to 50% off',
                           style: Theme.of(context).textTheme.displaySmall!
                               .copyWith(
                                 fontSize: 27,
@@ -201,7 +217,10 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                             Title(
                               color: Theme.of(context).colorScheme.onPrimary,
                               child: Text(
-                                "Clothing for comfort. anywhere, everywhere",
+                                _splashText != null && _splashText!.isNotEmpty
+                                    ? _splashText![2].values.first
+                                    // Default value is the apps initial section 2 page text
+                                    : 'Clothing for comfort. Anywhere, Everywhere',
                                 style: Theme.of(context)
                                     .textTheme
                                     .headlineSmall!
