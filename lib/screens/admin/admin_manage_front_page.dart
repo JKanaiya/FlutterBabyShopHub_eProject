@@ -70,6 +70,12 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
     }
     final screenHeight = MediaQuery.of(context).size.height;
 
+    Future<void> _logout() async {
+      await supabase.auth.signOut();
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/auth');
+    }
+
     return Scaffold(
       // TODO change to list view and remove the gap between the 2 sections
       body: SingleChildScrollView(
@@ -331,16 +337,17 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
                     Positioned(
                       child: IconButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            // TODO: Add proper functionality to navigate to the appt page here
-                            MaterialPageRoute(
-                              builder: (context) => EditSection(
-                                section: 3,
-                                text: getValueByKey(3)!,
-                              ),
-                            ),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   // TODO: Add proper functionality to navigate to the appt page here
+                          //   MaterialPageRoute(
+                          //     builder: (context) => EditSection(
+                          //       section: 3,
+                          //       text: getValueByKey(3)!,
+                          //     ),
+                          //   ),
+                          // );
+                          _logout();
                         },
                         icon: Icon(
                           Icons.edit,

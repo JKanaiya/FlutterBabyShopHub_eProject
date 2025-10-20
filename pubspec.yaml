@@ -35,6 +35,7 @@ dependencies:
   image_picker: ^1.0.7
   google_fonts:
   google_nav_bar: ^5.0.7
+  flutter_rating_bar: ^4.0.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -68,11 +69,10 @@ flutter:
     - assets/images/Logos/google.png
 
   fonts:
-      - family: Ubuntu
-        fonts:
+    - family: Ubuntu
+      fonts:
         - asset: assets/fonts/Ubuntu-Regular.ttf
         - asset: assets/fonts/Ubuntu-Italic.ttf
 
-  
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

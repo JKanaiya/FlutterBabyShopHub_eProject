@@ -32,13 +32,16 @@ class _ProductsPageState extends State<ProductsPage> {
     try {
       final data = await supabase.from('categories').select().order('id');
       setState(() {
-        _categories = <Map<String, dynamic>>[{'id': null, 'name': 'All'}]
-          ..addAll(List<Map<String, dynamic>>.from(data));
+        _categories = <Map<String, dynamic>>[
+          {'id': null, 'name': 'All'},
+        ]..addAll(List<Map<String, dynamic>>.from(data));
       });
     } catch (e) {
       debugPrint('Error fetching categories: $e');
       setState(() {
-        _categories = <Map<String, dynamic>>[{'id': null, 'name': 'All'}];
+        _categories = <Map<String, dynamic>>[
+          {'id': null, 'name': 'All'},
+        ];
       });
     }
   }
@@ -51,7 +54,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
       if (_selectedCategory != 'All') {
         final cat = _categories.firstWhere(
-              (c) => c['name'] == _selectedCategory,
+          (c) => c['name'] == _selectedCategory,
           orElse: () => {},
         );
         if (cat.isNotEmpty && cat['id'] != null) {
@@ -117,9 +120,9 @@ class _ProductsPageState extends State<ProductsPage> {
       );
     } catch (e) {
       debugPrint('Add to cart failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to add to cart')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to add to cart')));
     }
   }
 
@@ -168,7 +171,10 @@ class _ProductsPageState extends State<ProductsPage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.black12.withOpacity(0.03), blurRadius: 6),
+                    BoxShadow(
+                      color: Colors.black12.withOpacity(0.03),
+                      blurRadius: 6,
+                    ),
                   ],
                 ),
                 child: TextField(
@@ -177,7 +183,10 @@ class _ProductsPageState extends State<ProductsPage> {
                     hintText: 'Search products...',
                     prefixIcon: Icon(Icons.search, color: Color(0xff006876)),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 12,
+                    ),
                   ),
                 ),
               ),
@@ -190,33 +199,40 @@ class _ProductsPageState extends State<ProductsPage> {
                 child: _categories.isEmpty
                     ? const SizedBox.shrink()
                     : ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  itemBuilder: (context, index) {
-                    final cat = _categories[index];
-                    final name = cat['name'] ?? 'All';
-                    final isSelected = name == _selectedCategory;
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categories.length,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        itemBuilder: (context, index) {
+                          final cat = _categories[index];
+                          final name = cat['name'] ?? 'All';
+                          final isSelected = name == _selectedCategory;
 
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ChoiceChip(
-                        label: Text(
-                          name,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                        selected: isSelected,
-                        onSelected: (_) => _onCategorySelected(name),
-                        selectedColor: const Color(0xff006876),
-                        backgroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ChoiceChip(
+                              label: Text(
+                                name,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.black87,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) => _onCategorySelected(name),
+                              selectedColor: const Color(0xff006876),
+                              backgroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
 
               const SizedBox(height: 12),
@@ -228,130 +244,153 @@ class _ProductsPageState extends State<ProductsPage> {
                     : _products.isEmpty
                     ? const Center(child: Text("No products available"))
                     : LayoutBuilder(
-                  builder: (context, constraints) {
-                    final crossAxisCount = _gridCrossAxisCount(context);
-                    return GridView.builder(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.65,
-                      ),
-                      itemCount: _products.length,
-                      itemBuilder: (context, index) {
-                        final product = _products[index];
-                        final imageUrl = product['image_url'] ??
-                            'https://via.placeholder.com/150';
-                        final rating = (product['rating'] ?? 4.5).toDouble();
+                        builder: (context, constraints) {
+                          final crossAxisCount = _gridCrossAxisCount(context);
+                          return GridView.builder(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 0.65,
+                                ),
+                            itemCount: _products.length,
+                            itemBuilder: (context, index) {
+                              final product = _products[index];
+                              final imageUrl =
+                                  product['image_url'] ??
+                                  'https://via.placeholder.com/150';
+                              final rating = (product['rating'] ?? 4.5)
+                                  .toDouble();
 
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/product_detail',
-                              arguments: product['id'],
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                            elevation: 2,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Stack(
-                                  children: [
-                                    // Product image
-                                    ClipRRect(
-                                      borderRadius:
-                                      const BorderRadius.vertical(top: Radius.circular(14)),
-                                      child: Image.network(
-                                        imageUrl,
-                                        height: constraints.maxWidth / (crossAxisCount * 1.9),
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    // ⭐ Rating overlay top-right
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.6),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.star,
-                                                color: Color(0xfffbc02d), size: 16),
-                                            const SizedBox(width: 3),
-                                            Text(
-                                              rating.toStringAsFixed(1),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/product_detail',
+                                    arguments: product['id'],
+                                  );
+                                },
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  elevation: 2,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Stack(
+                                        children: [
+                                          // Product image
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                  top: Radius.circular(14),
+                                                ),
+                                            child: Image.network(
+                                              imageUrl,
+                                              height:
+                                                  constraints.maxWidth /
+                                                  (crossAxisCount * 1.9),
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          // ⭐ Rating overlay top-right
+                                          Positioned(
+                                            top: 8,
+                                            right: 8,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withOpacity(
+                                                  0.6,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.star,
+                                                    color: Color(0xfffbc02d),
+                                                    size: 16,
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  Text(
+                                                    rating.toStringAsFixed(1),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // 🏷 Product info
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['name'] ?? '',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Color(0xff006876),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "\$${product['price']}",
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.add_shopping_cart,
+                                                    color: Color(0xff006876),
+                                                  ),
+                                                  onPressed: () =>
+                                                      _addToCart(product),
+                                                  tooltip: 'Add to cart',
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                // 🏷 Product info
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        product['name'] ?? '',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: Color(0xff006876),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            "\$${product['price']}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.add_shopping_cart,
-                                                color: Color(0xff006876)),
-                                            onPressed: () => _addToCart(product),
-                                            tooltip: 'Add to cart',
-                                          ),
-                                        ],
-                                      ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -360,3 +399,4 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 }
+

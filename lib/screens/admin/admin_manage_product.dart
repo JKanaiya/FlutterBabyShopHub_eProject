@@ -2,6 +2,7 @@ import 'package:babyshophub/screens/admin/edit_product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:babyshophub/main.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class AdminProductManage extends StatefulWidget {
   final int productId;
@@ -16,8 +17,10 @@ class _AdminProductManageState extends State<AdminProductManage> {
   List<Map<String, dynamic>> _reviews = [];
   bool _isLoading = true;
   final TextEditingController _commentController = TextEditingController();
+  double? _ratingAverage;
 
   Future<void> _loadProductDetails() async {
+    double? average;
     try {
       final productData = await supabase
           .from('products')
@@ -25,13 +28,31 @@ class _AdminProductManageState extends State<AdminProductManage> {
           .eq('id', widget.productId)
           .maybeSingle();
 
+      final reviews = await supabase
+          .from('reviews')
+          .select('rating, comment, user_email')
+          .eq('product_id', productData?['id']);
+
+      if (reviews.isEmpty) {
+        average = 4.5;
+      } else if (reviews.length == 1) {
+        average = reviews[0]['rating'];
+      } else {
+        double sum = reviews.fold(
+          0,
+          (prev, review) => prev + (review['rating'] as num).toDouble(),
+        );
+        average = sum / reviews.length;
+      }
+
       setState(() {
         _product = productData;
+        _reviews = reviews;
         _isLoading = false;
+        _ratingAverage = average;
       });
     } catch (e) {
       debugPrint("Error loading product details: $e");
-      setState(() => _isLoading = false);
     }
   }
 
@@ -45,6 +66,8 @@ class _AdminProductManageState extends State<AdminProductManage> {
   // TODO: replace the text with the product data from supabase
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final user = supabase.auth.currentUser;
+    double? userRating = 4.0;
 
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -52,7 +75,6 @@ class _AdminProductManageState extends State<AdminProductManage> {
 
     Future<void> _addToCart(Map<String, dynamic> product) async {
       try {
-        final user = supabase.auth.currentUser;
         if (user == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please log in to add items to cart')),
@@ -95,6 +117,27 @@ class _AdminProductManageState extends State<AdminProductManage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Failed to add to cart')));
+      }
+    }
+
+    // TODO: implement this after rating form submission exists
+    Future addComment() async {
+      try {
+        await supabase.from('reviews').insert({
+          'product_id': _product?['id'],
+          'user_id': user?.id,
+          'comment': _commentController.text,
+          'rating': userRating,
+          'user_email': user?.email,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment added successfully!')),
+        );
+        _loadProductDetails();
+      } catch (e) {
+        debugPrint("Error loading product details: $e");
+        setState(() => _isLoading = false);
       }
     }
 
@@ -206,7 +249,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                           Row(
                             children: [
                               Text(
-                                '4.9',
+                                _ratingAverage.toString(),
                                 style: TextStyle(
                                   fontFamily: "ubuntu",
                                   fontSize: 27,
@@ -216,18 +259,19 @@ class _AdminProductManageState extends State<AdminProductManage> {
                               ),
                               SizedBox(width: 10),
                               ...List.generate(
-                                4,
+                                _ratingAverage!.floor(),
                                 (index) => Icon(
                                   Icons.star_rounded,
                                   color: Theme.of(context).colorScheme.primary,
                                   size: 30,
                                 ),
                               ),
-                              Icon(
-                                Icons.star_half_rounded,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 30,
-                              ),
+                              if (_ratingAverage! >= _ratingAverage!.floor())
+                                Icon(
+                                  Icons.star_half_rounded,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 30,
+                                ),
                             ],
                           ),
                           ListTile(
@@ -297,146 +341,141 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 ),
                 child: Container(
                   height: screenHeight * 0.4,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
 
-                  child: ListView(
-                    children: [
-                      Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          ListTile(
-                            leading: Icon(Icons.person_2_outlined),
-                            // TODO replace with data
-                            contentPadding: EdgeInsets.only(right: 0.0),
-                            trailing: SizedBox(
-                              width: 100,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    '4.9',
-                                    style: TextStyle(
-                                      fontFamily: "ubuntu",
-                                      fontSize: 18,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
+                  child: _reviews.isNotEmpty
+                      ? ListView.builder(
+                          itemCount: _reviews.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                ListTile(
+                                  leading: Icon(Icons.person_2_outlined),
+                                  // contentPadding: EdgeInsets.only(right: 0.0),
+                                  trailing: SizedBox(
+                                    width: 60,
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          _reviews[index]['rating'].toString(),
+                                          style: TextStyle(
+                                            fontFamily: "ubuntu",
+                                            fontSize: 18,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.star_half_rounded,
+                                          size: 25,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Icon(
-                                    Icons.star_half_rounded,
-                                    size: 25,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                  title: Text(
+                                    _reviews[index]['user_email'],
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(fontFamily: "ubuntu"),
                                   ),
-                                ],
-                              ),
-                            ),
-                            title: Text(
-                              "Jane Doe",
-                              style: Theme.of(context).textTheme.labelSmall!
-                                  .copyWith(fontFamily: "ubuntu"),
-                            ),
-                          ),
-                          Text(
-                            "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
-                            style: Theme.of(context).textTheme.bodyMedium!
-                                .copyWith(fontFamily: "ubuntu"),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          ListTile(
-                            leading: Icon(Icons.person_2_outlined),
-                            // TODO replace with data
-                            contentPadding: EdgeInsets.only(right: 0.0),
-                            trailing: SizedBox(
-                              width: 100,
-                              child: Row(
-                                children: [
-                                  Text(
-                                    '4.9',
-                                    style: TextStyle(
-                                      fontFamily: "ubuntu",
-                                      fontSize: 18,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.star_half_rounded,
-                                    size: 25,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            title: Text(
-                              "Jane Doe",
-                              style: Theme.of(context).textTheme.labelSmall!
-                                  .copyWith(fontFamily: "ubuntu"),
-                            ),
-                          ),
-                          Text(
-                            "Absolutely love these! They are so soft and easy to put on, which is a miracle with a squirmy baby. They actually stay on her feet all day—no more lost socks or shoes! Plus, the suede sole gives her just the right grip on our hardwood floors. Highly recommend for new walkers!",
-                            style: Theme.of(context).textTheme.bodyMedium!
-                                .copyWith(fontFamily: "ubuntu"),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                                ),
+                                Text(
+                                  _reviews[index]['comment'],
+                                  style: Theme.of(context).textTheme.bodyMedium!
+                                      .copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.tertiary,
+                                      ),
+                                ),
+                              ],
+                            );
+                          },
+                        )
+                      : Center(child: const Text("No reviews yet!")),
                 ),
               ),
               const SizedBox(height: 20),
-              ListTile(
-                contentPadding: EdgeInsets.only(right: 0.0),
-                title: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: "Add Comment",
-                      hintStyle: TextStyle(
-                        fontFamily: 'ubuntu',
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontSize: 15,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  RatingBar(
+                    initialRating: 0,
+                    itemCount: 5,
+                    allowHalfRating: true,
+                    onRatingUpdate: (rating) {
+                      userRating = rating;
+                    },
+                    ratingWidget: RatingWidget(
+                      full: Icon(
+                        Icons.star_rounded,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
-                      border: InputBorder.none,
+                      half: Icon(
+                        Icons.star_half_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      empty: Icon(
+                        Icons.star_outline_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    itemPadding: EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.only(right: 0.0),
+                    title: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextField(
+                        controller: _commentController,
+                        decoration: InputDecoration(
+                          hintText: "Add Comment",
+                          hintStyle: TextStyle(
+                            fontFamily: 'ubuntu',
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer,
+                            fontSize: 15,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
+                        ),
+                      ),
+                    ),
+                    trailing: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 2.0,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: IconButton(
+                        hoverColor: Theme.of(
+                          context,
+                        ).colorScheme.secondaryContainer,
+                        color: Theme.of(context).colorScheme.primary,
+                        icon: Icon(Icons.north_outlined),
+                        onPressed: () => addComment(),
+                      ),
                     ),
                   ),
-                ),
-                trailing: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 2.0,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: IconButton(
-                    hoverColor: Theme.of(
-                      context,
-                    ).colorScheme.secondaryContainer,
-                    color: Theme.of(context).colorScheme.primary,
-                    icon: Icon(Icons.north_outlined),
-                    // TODO: Implement addComment on product
-                    onPressed: () {},
-                  ),
-                ),
+                ],
               ),
             ],
           ),

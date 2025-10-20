@@ -8,6 +8,7 @@ class EditProduct extends StatefulWidget {
   final int id;
   final String description;
   final String name;
+
   const EditProduct({
     super.key,
     required this.price,
@@ -41,7 +42,7 @@ class _EditProductState extends State<EditProduct> {
   Future uploadData() async {
     if (_imageFile == null &&
         descriptionController.text == widget.description &&
-        priceTextController.text == widget.price) {
+        priceTextController.text == widget.price.toString()) {
       return;
     }
 
@@ -177,6 +178,7 @@ class _EditProductState extends State<EditProduct> {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: widget.name,
+                  label: Text("Name:"),
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -198,6 +200,7 @@ class _EditProductState extends State<EditProduct> {
               ),
               child: TextField(
                 decoration: InputDecoration(
+                  label: Text("Price:"),
                   hintText: widget.price.toString(),
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
@@ -220,6 +223,7 @@ class _EditProductState extends State<EditProduct> {
               ),
               child: TextField(
                 decoration: InputDecoration(
+                  label: Text("Description"),
                   hintText: widget.description,
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
