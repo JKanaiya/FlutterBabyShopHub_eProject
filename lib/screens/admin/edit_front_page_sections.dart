@@ -1,10 +1,15 @@
 import 'package:babyshophub/main.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart'; // Package for picking images from the device gallery.
+import 'dart:io'; // Required for the File class to handle local images.
 
+/// A screen for administrators to edit a specific front page section's content.
+///
+/// It allows updating both the image and the associated text for a splash screen section.
 class EditSection extends StatefulWidget {
+  // The unique ID of the front page section being edited (1, 2, or 3).
   final int section;
+  // The current text associated with this section.
   final String text;
   const EditSection({super.key, required this.section, required this.text});
 
@@ -13,45 +18,67 @@ class EditSection extends StatefulWidget {
 }
 
 class _EditSectionState extends State<EditSection> {
+  // Holds the selected image file from the user's gallery before upload.
   File? _imageFile;
+  // Controller for the text input field.
   final textController = TextEditingController();
 
-  Future pickImage() async {
+  /// Opens the gallery to allow the user to pick an image file.
+  Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
 
+    // Request to pick an image from the gallery.
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
+      // Update state to show the selected image file preview.
       setState(() {
         _imageFile = File(image.path);
       });
     }
   }
 
-  Future uploadData() async {
+  /// Handles the process of uploading the new image and/or updating the text to Supabase.
+  Future<void> uploadData() async {
+    // If neither image was selected nor text was changed, exit early.
     if (_imageFile == null && textController.text == widget.text) return;
 
+    // ---  Image Upload/Update ---
     if (_imageFile != null) {
+      // Upload the new image to the Supabase Storage bucket, replacing the old one.
       await supabase.storage
           .from('product-images')
-          .update("Splash Screen/splashscreen${widget.section}", _imageFile!)
+          .update(
+        "Splash Screen/splashscreen${widget.section}", // Dynamic file path
+        _imageFile!,
+      )
           .then(
             (value) => {
-              if (mounted)
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Image updated successfully!")),
-                ),
-            },
-          );
+          if (mounted)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Image updated successfully!")),
+            ),
+        },
+      );
     }
 
-    if (textController.text != widget.text) {
+    // --- Text Update ---
+    // Only update the database if the text field contains a new value.
+    if (textController.text != widget.text && textController.text.isNotEmpty) {
       await supabase
           .from('app_data_upserts')
           .update({'sectionText': textController.text})
-          .eq("section", widget.section);
+          .eq("section", widget.section); // Target the correct section row.
     }
+
+    // Navigate back after successful update (ensuring widget is still mounted).
     if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
   }
 
   @override
@@ -60,7 +87,7 @@ class _EditSectionState extends State<EditSection> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context), // Back button functionality
           icon: Icon(
             Icons.west,
             color: Theme.of(context).colorScheme.primary,
@@ -75,11 +102,12 @@ class _EditSectionState extends State<EditSection> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image Selection Header and Button
             ListTile(
               title: Text(
                 "Update Section ${widget.section}",
@@ -88,17 +116,7 @@ class _EditSectionState extends State<EditSection> {
                 ),
               ),
               trailing: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.secondaryContainer,
-                  padding: EdgeInsets.all(20),
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: pickImage,
+                onPressed: pickImage, // Triggers image selection
                 child: Text(
                   "Select Image",
                   style: TextStyle(
@@ -109,29 +127,31 @@ class _EditSectionState extends State<EditSection> {
                 ),
               ),
             ),
+            // Image Preview Area
             Container(
               height: screenHeight * 0.4,
               decoration: BoxDecoration(
                 color: Colors.white,
-                // borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   width: 2.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
               child: _imageFile != null
-                  ? Image.file(_imageFile!, fit: BoxFit.fill)
-                  : const Center(child: Text("No image selected ...")),
+                  ? Image.file(_imageFile!, fit: BoxFit.fill) // Show selected image
+                  : const Center(child: Text("No image selected ...")), // Placeholder
             ),
+            // Text Editing Field
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                controller: textController,
                 decoration: InputDecoration(
-                  hintText: widget.text,
+                  hintText: widget.text, // Show current text as a hint
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -142,20 +162,12 @@ class _EditSectionState extends State<EditSection> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
-                controller: textController,
               ),
             ),
+            // Update Data Button
             Center(
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding: EdgeInsets.all(20),
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: uploadData,
+                onPressed: uploadData, // Triggers database update/upload
                 child: const Text(
                   "Update Data",
                   style: TextStyle(fontFamily: "ubuntu", fontSize: 20),

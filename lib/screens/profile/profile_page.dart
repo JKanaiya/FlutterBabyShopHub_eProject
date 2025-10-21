@@ -3,9 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../orders/order_history_page.dart';
 import 'edit_profile_page.dart';
 
-
+// Global Supabase client instance for authenticated operations.
 final supabase = Supabase.instance.client;
 
+/// The main profile screen displaying user information and navigation links.
+///
+/// It fetches user data from the 'profiles' table and provides options
+/// to edit the profile, view order history, and log out.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -14,21 +18,30 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // State variable to control the display of the loading indicator.
   bool _isLoading = true;
+
+  // Map to hold the user's profile data fetched from Supabase
   Map<String, dynamic>? _profile;
+
+  // Tracks the current index of the bottom navigation bar (assuming a 5-tab structure).
   int _currentIndex = 4; // last tab (profile)
 
   @override
   void initState() {
     super.initState();
+    // Fetch user profile data immediately upon initialization.
     _loadProfile();
   }
 
+  /// Fetches the user's profile details (name, email, phone, etc.) from the
+  /// 'profiles' table using the currently authenticated user ID
   Future<void> _loadProfile() async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
+      // Query the 'profiles' table.
       final data = await supabase
           .from('profiles')
           .select('full_name, email, phone, created_at')
@@ -45,12 +58,15 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  /// Signs out the current user and navigates them back to the authentication screen.
   Future<void> _logout() async {
     await supabase.auth.signOut();
     if (!mounted) return;
+    // Replace the current screen stack with the '/auth' route.
     Navigator.pushReplacementNamed(context, '/auth');
   }
 
+  /// Helper widget to build a standardized list tile for navigation options.
   Widget _buildListTile({
     required IconData icon,
     required String title,
@@ -71,12 +87,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Display a loading indicator if data is still being fetched.
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    // Safely extract profile details, using fallback values if data is null.
     final profile = _profile;
     final name = profile?['full_name'] ?? 'User';
     final email = profile?['email'] ?? 'No email';
@@ -144,14 +162,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   icon: Icons.edit_outlined,
                   title: 'Edit Profile',
                   onTap: () async {
+                    // Navigate to EditProfilePage and wait for result
                     final updated = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => const EditProfilePage()),
                     );
+                    // If true is returned (profile saved), reload data.
                     if (updated == true) _loadProfile();
                   },
                 ),
+
+                //Order History
                 _buildListTile(
                   icon: Icons.history_outlined,
                   title: 'Order History',
@@ -163,6 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
                   },
                 ),
+                //Help & Support
                 _buildListTile(
                   icon: Icons.help_outline,
                   title: 'Help & Support',
@@ -174,6 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
                   },
                 ),
+                //Logout
                 _buildListTile(
                   icon: Icons.logout,
                   title: 'Logout',
@@ -182,6 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 30),
+                // Footer/Copyright information.
                 const Text(
                   "© 2025 BabyShopHub",
                   style: TextStyle(color: Colors.black38, fontSize: 13),

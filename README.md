@@ -21,6 +21,7 @@ It includes features for product browsing, shopping cart management, order place
 ### 🧑‍💼 Admin Features
 - Dedicated **Admin Dashboard** to manage products, categories, and orders (only accessible to admin users).
 
+<<<<<<< Updated upstream
 ---
 
 ## 🧩 Tech Stack
@@ -180,3 +181,10 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 > for a smoother baby shopping experience 🍼
 
 ```
+=======
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+# FlutterBabyShopHub_eProject
+
+

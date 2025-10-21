@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Global Supabase client instance used for all database and auth operations.
 final supabase = Supabase.instance.client;
-
+/// A screen  for displaying the current user's past order history.
 class OrderHistoryPage extends StatefulWidget {
+
   const OrderHistoryPage({super.key});
 
   @override
@@ -11,35 +13,46 @@ class OrderHistoryPage extends StatefulWidget {
 }
 
 class _OrderHistoryPageState extends State<OrderHistoryPage> {
+  // State variable to manage the loading indicator display
   bool _isLoading = true;
+  // List to hold the fetched order data from the database.
   List<Map<String, dynamic>> _orders = [];
 
   @override
   void initState() {
     super.initState();
+    // Start fetching order data immediately when the widget is initialized.
     _fetchOrders();
   }
-
+  /// Fetches the order history for the currently authenticated user from Supabase.
   Future<void> _fetchOrders() async {
     final user = supabase.auth.currentUser;
+    // If no user is logged in, stop the function.
     if (user == null) return;
 
     try {
+      // Query the 'orders' table for the current user's orders.
       final data = await supabase
           .from('orders')
           .select('id, total_amount, status, created_at')
+          // Order by creation date, newest first.
           .order('created_at', ascending: false);
+
 
       setState(() {
         _orders = List<Map<String, dynamic>>.from(data);
       });
     } catch (e) {
+      // Print error details for debugging purposes.
       debugPrint("Error fetching orders: $e");
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
+  /// Returns a specific color based on the order status string.
+  ///
+  /// @param s The status string (e.g., 'delivered', 'shipped').
+  /// @returns A Material color associated with the status.
   Color _statusColor(String s) {
     switch (s) {
       case 'delivered':
@@ -74,9 +87,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         iconTheme: const IconThemeData(color: Color(0xff006876)),
       ),
       body: _isLoading
+      // Display a progress indicator while data is being fetched.
           ? const Center(child: CircularProgressIndicator())
           : _orders.isEmpty
+      // Display a message if the orders list is empty.
           ? const Center(child: Text("No past orders yet"))
+      // Use a ListView.builder to efficiently display the list of orders.
           : ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _orders.length,
@@ -95,9 +111,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     fontWeight: FontWeight.bold, fontSize: 16),
               ),
               subtitle: Text(
+                // Format date and total amount for the subtitle.
                 "Date: ${order['created_at'].toString().split('T').first}\n"
                     "Total: \$${order['total_amount']}",
               ),
+              // Display the order status as a colored badge on the right
               trailing: Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 6),
@@ -114,6 +132,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   ),
                 ),
               ),
+              // Navigate to the detailed order tracking page when tapped.
               onTap: () {
                 Navigator.pushNamed(
                   context,

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../shop/shop_page.dart'; //
+import '../shop/shop_page.dart';
 
+/// A screen for user sign-in functionality using email and password.
+///
+/// This widget handles user input, performs authentication via Supabase,
+/// and navigates to the main products page upon success.
 class SignInPage extends StatefulWidget {
   final VoidCallback onRegisterClicked;
-
+  /// Callback function to navigate to the registration screen.
   const SignInPage({super.key, required this.onRegisterClicked});
 
   @override
@@ -13,10 +17,14 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
+  // Controllers for the email and password text fields.
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // State variable to manage the loading indicator on the button.
   bool _loading = false;
 
+  /// Attempts to sign in the user with the provided email and password
+  /// using Supabase authentication.
   Future<void> _signIn() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -28,11 +36,19 @@ class _SignInPageState extends State<SignInPage> {
 
     setState(() => _loading = true);
     try {
+      // Call the Supabase sign-in method.
       final res = await Supabase.instance.client.auth
           .signInWithPassword(email: email, password: password);
-
+    // Check if the sign-in was successful (user object is present).
       if (res.user != null) {
+
+// <<<<<<< Updated upstream
         Navigator.pushAndRemoveUntil(
+// =======
+
+        // Navigate to the main products page, replacing the current route.
+        // Navigator.pushReplacement(
+
           context,
           MaterialPageRoute(builder: (_) => const ShopPage()),
               (route) => false,
@@ -50,7 +66,10 @@ class _SignInPageState extends State<SignInPage> {
   void _showMsg(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
-
+  /// Handles the action for the close button.
+  ///
+  /// It attempts to pop the current screen; if no screens are left,
+  /// it exits the application.
   void _handleClose() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -66,6 +85,7 @@ class _SignInPageState extends State<SignInPage> {
       body: Center(
         child: Stack(
           children: [
+            // Allows the form content to be scrollable if needed.
             SingleChildScrollView(
               child: Column(
                 children: [
@@ -79,6 +99,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // Card-like container for the input form.
                   Container(
                     width: 300,
                     padding: const EdgeInsets.all(20),
@@ -95,16 +116,19 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     child: Column(
                       children: [
+                        // Email input field.
                         TextField(
                           controller: _emailController,
                           decoration: const InputDecoration(labelText: "Email"),
                         ),
+                        // Password input field.
                         TextField(
                           controller: _passwordController,
                           obscureText: true,
                           decoration: const InputDecoration(labelText: "Password"),
                         ),
                         const SizedBox(height: 20),
+                        // Sign In button. Disabled when loading.
                         ElevatedButton(
                           onPressed: _loading ? null : _signIn,
                           style: ElevatedButton.styleFrom(
@@ -112,12 +136,14 @@ class _SignInPageState extends State<SignInPage> {
                             foregroundColor: Colors.white,
                             minimumSize: const Size(double.infinity, 45),
                           ),
+                          // Display "Loading..." text when authentication is in progress.
                           child: Text(_loading ? "Loading..." : "SIGN IN"),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 15),
+                  // Button to navigate to the registration screen using the callback.
                   TextButton(
                     onPressed: widget.onRegisterClicked,
                     child: const Text("Don’t have an account? Register here"),
@@ -125,6 +151,10 @@ class _SignInPageState extends State<SignInPage> {
                 ],
               ),
             ),
+
+
+            // ❌ close icon
+            // Close icon button positioned absolutely on the top right.
             Positioned(
               top: 40,
               right: 20,

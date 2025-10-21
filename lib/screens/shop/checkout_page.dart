@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Global Supabase client instance for ease of access
 final supabase = Supabase.instance.client;
 
+
+/// A screen responsible for the final steps before placing an order.
+///
+/// It allows users to select a shipping address, choose a payment method,
+/// view the order total, and confirm the purchase.
 class CheckoutPage extends StatefulWidget {
   final String cartId;
 
@@ -13,6 +19,8 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+
+  /// The ID of the current shopping cart being processed for checkout.
   bool _isLoading = true;
   List<Map<String, dynamic>> _addresses = [];
   String? _selectedAddressId;
@@ -22,9 +30,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   void initState() {
     super.initState();
+    // Load necessary data (addresses and cart total) upon page initialization.
     _loadCheckoutData();
   }
 
+  /// Fetches the user's saved shipping addresses and calculates the total
+  /// amount of the items in the current cart.
   Future<void> _loadCheckoutData() async {
     try {
       final user = supabase.auth.currentUser;
@@ -47,6 +58,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           .select('quantity, unit_price')
           .eq('cart_id', widget.cartId);
 
+      // Calculate the total from all cart items.
       double total = 0.0;
       for (final item in cartData) {
         total += (item['quantity'] as num) * (item['unit_price'] as num);
@@ -54,6 +66,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       setState(() {
         _addresses = List<Map<String, dynamic>>.from(addressData);
+        // Automatically select the first address if available.
         _totalAmount = total;
         _isLoading = false;
       });
@@ -63,7 +76,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
+  /// Executes the multi-step process to finalize the transaction:
+  /// 1. Creates a new entry in the `orders` table.
+  /// 2. Transfers items from `cart_items` to `order_items`.
+  /// 3. Clears the `cart_items`.
+  /// 4. Navigates to the order summary page.
   Future<void> _placeOrder() async {
+
+    // Validation checks.
     if (_selectedAddressId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a shipping address')),
@@ -133,6 +153,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
+  /// Opens a dialog window to allow the user to input and save a new shipping address
   void _addNewAddress() {
     TextEditingController labelCtrl = TextEditingController();
     TextEditingController streetCtrl = TextEditingController();
@@ -145,6 +166,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         title: const Text("Add New Address"),
         content: SingleChildScrollView(
           child: Column(
+            // Form fields for address details.
             children: [
               TextField(
                   controller: labelCtrl,
@@ -168,6 +190,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           TextButton(
             onPressed: () async {
               final user = supabase.auth.currentUser;
+              // Insert the new address into the 'addresses' table.
               await supabase.from('addresses').insert({
                 'user_id': user!.id,
                 'label': labelCtrl.text,
@@ -176,6 +199,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 'phone': phoneCtrl.text,
                 'country': 'Kenya'
               });
+
+              // Reload all checkout data to include the new address.
               Navigator.pop(context);
               _loadCheckoutData();
             },
@@ -186,6 +211,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  /// Helper widget to generate a payment method RadioListTile with an image/logo.
+  ///
+  /// @param label The name of the payment method.
+  /// @param logoPath The local asset path to the logo image.
   Widget _buildPaymentOption(String label, String logoPath) {
     return RadioListTile<String>(
       value: label,
@@ -194,10 +223,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
       activeColor: const Color(0xff006876),
       title: Row(
         children: [
+          // Display the payment logo image.
           Image.asset(
             logoPath,
             height: 28,
             width: 28,
+            // Fallback icon if the image asset fails to load
             errorBuilder: (context, error, stackTrace) =>
             const Icon(Icons.payment, color: Colors.grey),
           ),
@@ -235,6 +266,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              // --- Shipping Address Section ---
               const Text("Shipping Address",
                   style: TextStyle(
                       fontSize: 18,
@@ -243,6 +276,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const SizedBox(height: 10),
               if (_addresses.isEmpty)
                 const Text("No addresses found. Add one below."),
+              // List of saved addresses, rendered as radio buttons.
               ..._addresses.map((addr) {
                 return RadioListTile<String>(
                   value: addr['id'],
@@ -300,6 +334,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               fontWeight: FontWeight.bold,
                               color: Color(0xff006876))),
                       const SizedBox(height: 10),
+
+                      // Subtotal calculation.
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -308,6 +344,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           Text("\$${_totalAmount.toStringAsFixed(2)}"),
                         ],
                       ),
+                      // Delivery cost (Hardcoded as Free).
                       const SizedBox(height: 8),
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -317,6 +354,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ],
                       ),
                       const Divider(height: 20),
+
+                      // Final Total Amount.
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -331,6 +370,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                   color: Color(0xff006876))),
                         ],
                       ),
+
+                      // Place Order/Pay Button.
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,

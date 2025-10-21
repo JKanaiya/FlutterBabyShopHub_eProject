@@ -2,9 +2,12 @@ import 'package:babyshophub/screens/admin/edit_product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:babyshophub/main.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';// Third-party rating bar widget
 
+/// A screen to view the details of a single product, including its reviews,
+/// and provides administrative actions like editing the product details.
 class AdminProductManage extends StatefulWidget {
+  // Required ID of the product to display.
   final int productId;
   AdminProductManage({super.key, required this.productId});
 
@@ -13,31 +16,37 @@ class AdminProductManage extends StatefulWidget {
 }
 
 class _AdminProductManageState extends State<AdminProductManage> {
+  // State variables for product data.
   Map<String, dynamic>? _product;
   List<Map<String, dynamic>> _reviews = [];
   bool _isLoading = true;
   final TextEditingController _commentController = TextEditingController();
   double? _ratingAverage;
 
+  /// Fetches the product details and associated reviews from Supabase.
   Future<void> _loadProductDetails() async {
     double? average;
     try {
+      // Fetch product information by ID.
       final productData = await supabase
           .from('products')
           .select('id, name, description, price, image_url')
           .eq('id', widget.productId)
           .maybeSingle();
 
+      // Fetch all reviews for this product.
       final reviews = await supabase
           .from('reviews')
           .select('rating, comment, user_email')
           .eq('product_id', productData?['id']);
 
+      //Calculate the average rating.
       if (reviews.isEmpty) {
-        average = 4.5;
+        average = 4.5;// Default rating if no reviews exist.
       } else if (reviews.length == 1) {
         average = reviews[0]['rating'];
       } else {
+        // Calculate sum of all ratings using fold.
         double sum = reviews.fold(
           0,
           (prev, review) => prev + (review['rating'] as num).toDouble(),
@@ -45,6 +54,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
         average = sum / reviews.length;
       }
 
+      // Update the UI state with the fetched data.
       setState(() {
         _product = productData;
         _reviews = reviews;
@@ -67,12 +77,15 @@ class _AdminProductManageState extends State<AdminProductManage> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final user = supabase.auth.currentUser;
+    // Temporary variable to hold rating from the rating bar before submission.
     double? userRating = 4.0;
 
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    /// Implements the logic to add the current product to the user's shopping cart.
+    /// This logic duplicates the "Get or Create Cart" pattern used elsewhere.
     Future<void> _addToCart(Map<String, dynamic> product) async {
       try {
         if (user == null) {
@@ -121,13 +134,14 @@ class _AdminProductManageState extends State<AdminProductManage> {
     }
 
     // TODO: implement this after rating form submission exists
+    /// Handles the submission of a new review
     Future addComment() async {
       try {
         await supabase.from('reviews').insert({
           'product_id': _product?['id'],
           'user_id': user?.id,
           'comment': _commentController.text,
-          'rating': userRating,
+          'rating': userRating,// Uses the rating value set by the RatingBar's onRatingUpdate.
           'user_email': user?.email,
         });
 
@@ -147,11 +161,12 @@ class _AdminProductManageState extends State<AdminProductManage> {
 
     return Scaffold(
       appBar: AppBar(
+        // Custom app bar styling with back and edit actions.
         backgroundColor: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
         titleSpacing: 50,
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context);// Go back to previous screen.
           },
           icon: Icon(
             Icons.west,
@@ -161,12 +176,14 @@ class _AdminProductManageState extends State<AdminProductManage> {
         ),
         toolbarHeight: 80,
         actions: [
+          // Edit button to navigate to the product editing screen
           IconButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => EditProduct(
+                    // Pass current product data to the edit screen.
                     price: _product?['price'],
                     description: _product?['description'],
                     id: _product?['id'],
@@ -193,6 +210,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
       body: Padding(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 40),
         child: ScrollConfiguration(
+          // Customize scroll behavior to remove visual scroll indicators.
           behavior: ScrollConfiguration.of(
             context,
           ).copyWith(scrollbars: false, overscroll: false),
@@ -200,6 +218,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
             clipBehavior: Clip.none,
             children: [
               // TODO: replace the image and data here with the product received from the db
+              // --- Product Details Card ---
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -220,6 +239,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 height: 500,
                 child: Column(
                   children: [
+                    // Product Image
                     Expanded(child: Image.network(imageUrl, fit: BoxFit.fill)),
                     const SizedBox(height: 20),
                     Container(
@@ -236,6 +256,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                       ),
                       child: Column(
                         children: [
+                          // Product Description
                           Text(
                             _product?['description'] ??
                                 'This is a high-quality baby product perfect for everyday use.',
@@ -246,6 +267,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          // Average Rating Display
                           Row(
                             children: [
                               Text(
@@ -258,6 +280,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                 ),
                               ),
                               SizedBox(width: 10),
+                              // Display full stars
                               ...List.generate(
                                 _ratingAverage!.floor(),
                                 (index) => Icon(
@@ -274,6 +297,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                 ),
                             ],
                           ),
+                          // Price and Add to Cart Button
                           ListTile(
                             contentPadding: EdgeInsets.only(right: 0.0),
                             leading: Text(
@@ -313,6 +337,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 ),
               ),
               const SizedBox(height: 30),
+              // --- Reviews Section Title ---
               Text(
                 "Reviews",
                 style: Theme.of(context).textTheme.headlineMedium!.copyWith(
@@ -322,6 +347,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
               ),
               const SizedBox(height: 30),
               // TODO: replace with builder when real data is fetchable
+              // --- Display Reviews List ---
               Container(
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -347,6 +373,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                       ? ListView.builder(
                           itemCount: _reviews.length,
                           itemBuilder: (BuildContext context, int index) {
+                            // Review Item
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
@@ -357,6 +384,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                     width: 60,
                                     child: Row(
                                       children: [
+                                        // Display Review Rating
                                         Text(
                                           _reviews[index]['rating'].toString(),
                                           style: TextStyle(
@@ -386,6 +414,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                         .copyWith(fontFamily: "ubuntu"),
                                   ),
                                 ),
+                                // Review Comment Text
                                 Text(
                                   _reviews[index]['comment'],
                                   style: Theme.of(context).textTheme.bodyMedium!
@@ -403,15 +432,17 @@ class _AdminProductManageState extends State<AdminProductManage> {
                 ),
               ),
               const SizedBox(height: 20),
+              // --- Add Review Form ---
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  // Rating Bar Input
                   RatingBar(
                     initialRating: 0,
                     itemCount: 5,
                     allowHalfRating: true,
                     onRatingUpdate: (rating) {
-                      userRating = rating;
+                      userRating = rating;// Update the userRating variable on change
                     },
                     ratingWidget: RatingWidget(
                       full: Icon(
@@ -429,6 +460,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                     ),
                     itemPadding: EdgeInsets.symmetric(horizontal: 4),
                   ),
+                  // Comment Text Field and Submit Button
                   ListTile(
                     contentPadding: EdgeInsets.only(right: 0.0),
                     title: Container(
