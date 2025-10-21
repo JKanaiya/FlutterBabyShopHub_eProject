@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:babyshophub/main.dart';
-=======
-import 'package:supabase_flutter/supabase_flutter.dart';
-// Global Supabase client instance for ease of access .
-final supabase = Supabase.instance.client;
->>>>>>> 513b849d90ea38071020a3ce6abb3be23880b453
 
 /// A screen that allows the authenticated user to view and update their profile details
 /// (full name and phone number) in the 'profiles' table.
@@ -67,7 +61,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-<<<<<<< HEAD
+      // Update the 'profiles' table with the new data.
       await supabase
           .from('profiles')
           .update({
@@ -76,16 +70,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', user.id);
-=======
-      // Update the 'profiles' table with the new data.
-      await supabase.from('profiles').update({
-        'full_name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', user.id);
       // Ensure only the current user's profile is updated.
-
->>>>>>> 513b849d90ea38071020a3ce6abb3be23880b453
 
       if (!mounted) return;
       // Show success message to the user.
@@ -97,23 +82,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
       Navigator.pop(context, true); // ✅ Return to ProfilePage
     } catch (e) {
       debugPrint("Error updating profile: $e");
-<<<<<<< HEAD
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to update profile')));
-=======
       ScaffoldMessenger.of(context).showSnackBar(
-
         // Show failure message.
         const SnackBar(content: Text('Failed to update profile')),
       );
->>>>>>> 513b849d90ea38071020a3ce6abb3be23880b453
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:babyshophub/main.dart';
-=======
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-// Global Supabase client instance for ease of access
-final supabase = Supabase.instance.client;
->>>>>>> 513b849d90ea38071020a3ce6abb3be23880b453
-
 
 /// A screen responsible for the final steps before placing an order.
 ///
@@ -23,7 +15,6 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-
   /// The ID of the current shopping cart being processed for checkout.
   bool _isLoading = true;
   List<Map<String, dynamic>> _addresses = [];
@@ -86,7 +77,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   /// 3. Clears the `cart_items`.
   /// 4. Navigates to the order summary page.
   Future<void> _placeOrder() async {
-
     // Validation checks.
     if (_selectedAddressId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -282,7 +272,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-<<<<<<< HEAD
+              // --- Shipping Address Section ---
               const Text(
                 "Shipping Address",
                 style: TextStyle(
@@ -291,15 +281,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   color: Color(0xff006876),
                 ),
               ),
-=======
-
-              // --- Shipping Address Section ---
-              const Text("Shipping Address",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff006876))),
->>>>>>> 513b849d90ea38071020a3ce6abb3be23880b453
               const SizedBox(height: 10),
               if (_addresses.isEmpty)
                 const Text("No addresses found. Add one below."),
