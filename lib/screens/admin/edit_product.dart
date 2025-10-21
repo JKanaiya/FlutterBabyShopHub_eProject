@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+/// An administrative screen used for editing the details of an existing product.
+///
+/// It allows updating the product's image, name, price, and description.
 class EditProduct extends StatefulWidget {
+  // Initial product details passed to the widget.
   final double price;
   final int id;
   final String description;
@@ -22,41 +26,52 @@ class EditProduct extends StatefulWidget {
 }
 
 class _EditProductState extends State<EditProduct> {
+  // Holds the selected image file from the user's gallery before upload.
   File? _imageFile;
+  // Controllers for the input fields, pre-populated with current values in the UI.
   final priceTextController = TextEditingController();
   final descriptionController = TextEditingController();
   final nameController = TextEditingController();
 
-  Future pickImage() async {
+  /// Opens the gallery to allow the user to pick a new image file for the product.
+  Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
 
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
       setState(() {
-        _imageFile = File(image.path);
+        _imageFile = File(image.path); // Set the selected file for preview.
       });
     }
   }
 
-  Future uploadData() async {
+  /// Handles the concurrent upload of the new image and/or updates the text fields to Supabase.
+  Future<void> uploadData() async {
+    // Check if any change has been made to prevent unnecessary database calls.
     if (_imageFile == null &&
         descriptionController.text == widget.description &&
+        nameController.text == widget.name &&
+
         priceTextController.text == widget.price.toString()) {
       return;
     }
 
-    final futures = <Future>[];
+    final futures = <Future>[]; // List to hold all update operations.
+
+    // ---  Image Update ---
 
     if (_imageFile != null) {
       futures.add(
         supabase
             .from('products')
+        // This line needs correction in a production app to upload the file to storage first.
             .update({'image_url': _imageFile})
             .eq("id", widget.id),
       );
     }
 
+    // ---  Description Update ---
     if (descriptionController.text.isNotEmpty &&
         descriptionController.text != widget.description) {
       futures.add(
@@ -67,6 +82,7 @@ class _EditProductState extends State<EditProduct> {
       );
     }
 
+    // ---  Name Update ---
     if (nameController.text.isNotEmpty && nameController.text != widget.name) {
       futures.add(
         supabase
@@ -76,21 +92,23 @@ class _EditProductState extends State<EditProduct> {
       );
     }
 
+    // ---  Price Update ---
     if (priceTextController.text.isNotEmpty &&
         priceTextController.text != widget.price.toString()) {
       futures.add(
         supabase
             .from('products')
-            .update({'price': priceTextController.text})
+            .update({'price': priceTextController.text}) // Price should be parsed to a number type if necessary.
             .eq("id", widget.id),
       );
     }
 
-    // Wait for all futures to complete, then show snackbar
+    // Wait for all database operations to complete successfully.
     await Future.wait(futures).then(
-      (value) => {
+          (value) => {
         if (mounted)
           {
+            // Show success message and navigate back.
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Section updated successfully!")),
             ),
@@ -101,12 +119,21 @@ class _EditProductState extends State<EditProduct> {
   }
 
   @override
+  void dispose() {
+    // Dispose of controllers to prevent memory leaks.
+    priceTextController.dispose();
+    descriptionController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context), // Back button
           icon: Icon(
             Icons.west,
             color: Theme.of(context).colorScheme.primary,
@@ -121,11 +148,12 @@ class _EditProductState extends State<EditProduct> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image Selection Header and Button
             ListTile(
               title: Text(
                 "Update Product",
@@ -134,17 +162,7 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
               trailing: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.secondaryContainer,
-                  padding: EdgeInsets.all(20),
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: pickImage,
+                onPressed: pickImage, // Triggers image selection
                 child: Text(
                   "Select Image",
                   style: TextStyle(
@@ -155,30 +173,32 @@ class _EditProductState extends State<EditProduct> {
                 ),
               ),
             ),
+            // Image Preview Area
             Container(
               height: screenHeight * 0.4,
               decoration: BoxDecoration(
                 color: Colors.white,
-                // borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   width: 2.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
               child: _imageFile != null
-                  ? Image.file(_imageFile!, fit: BoxFit.fill)
-                  : const Center(child: Text("No image selected ...")),
+                  ? Image.file(_imageFile!, fit: BoxFit.fill) // Show selected image
+                  : const Center(child: Text("No image selected ...")), // Placeholder
             ),
+            // Name Text Field
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                controller: nameController,
                 decoration: InputDecoration(
                   hintText: widget.name,
-                  label: Text("Name:"),
+                  label: const Text("Name:"),
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -189,18 +209,19 @@ class _EditProductState extends State<EditProduct> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
-                controller: nameController,
               ),
             ),
+            // Price Text Field
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                controller: priceTextController,
                 decoration: InputDecoration(
-                  label: Text("Price:"),
+                  label: const Text("Price:"),
                   hintText: widget.price.toString(),
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
@@ -212,18 +233,19 @@ class _EditProductState extends State<EditProduct> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
-                controller: priceTextController,
               ),
             ),
+            // Description Text Field
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
+                controller: descriptionController,
                 decoration: InputDecoration(
-                  label: Text("Description"),
+                  label: const Text("Description"),
                   hintText: widget.description,
                   hintStyle: TextStyle(
                     fontFamily: 'ubuntu',
@@ -235,20 +257,12 @@ class _EditProductState extends State<EditProduct> {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondaryContainer,
                 ),
-                controller: descriptionController,
               ),
             ),
+            // Update Data Button
             Center(
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  padding: EdgeInsets.all(20),
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: uploadData,
+                onPressed: uploadData, // Triggers database update/upload
                 child: const Text(
                   "Update Data",
                   style: TextStyle(fontFamily: "ubuntu", fontSize: 20),

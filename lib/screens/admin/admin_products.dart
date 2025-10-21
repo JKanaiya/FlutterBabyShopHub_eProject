@@ -1,8 +1,12 @@
 import 'package:babyshophub/screens/admin/admin_manage_product.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:babyshophub/main.dart';
 
+/// The central screen for administrators to browse, search, and manage product inventory.
+///
+/// This screen fetches and displays a list of products, supporting filtering by category
+/// and searching by product name, similar to the main customer product page.
 class AdminProducts extends StatefulWidget {
   const AdminProducts({super.key});
 
@@ -11,27 +15,34 @@ class AdminProducts extends StatefulWidget {
 }
 
 class _AdminProductsState extends State<AdminProducts> {
+  // State variables for data and UI management.
   bool _isLoading = true;
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _categories = [];
   String _searchQuery = '';
-  String _selectedCategory = 'All';
+  String _selectedCategory = 'All';// Current category filter state
 
   @override
   void initState() {
     super.initState();
+    // Load both categories and products on screen initialization.
     _loadData();
   }
 
+  /// Initiates the fetching of both categories and products.
   Future<void> _loadData() async {
     await _fetchCategories();
     await _fetchProducts();
   }
 
+  /// Fetches the list of product categories from Supabase.
+  ///
+  /// Prepends a 'All' category option for filtering.
   Future<void> _fetchCategories() async {
     try {
       final data = await supabase.from('categories').select().order('id');
       setState(() {
+        // Prepend a dummy 'All' category for filtering.
         _categories = <Map<String, dynamic>>[
           {'id': null, 'name': 'All'},
           ...List<Map<String, dynamic>>.from(data),
@@ -46,13 +57,15 @@ class _AdminProductsState extends State<AdminProducts> {
       });
     }
   }
-
+  /// Fetches products from Supabase, applying category and search filters.
   Future<void> _fetchProducts() async {
     setState(() => _isLoading = true);
 
     try {
+      // Start with a query for active products.
       var query = supabase.from('products').select().eq('is_active', true);
 
+      // Apply Category Filter: Check if a specific category is selected.
       if (_selectedCategory != 'All') {
         final cat = _categories.firstWhere(
           (c) => c['name'] == _selectedCategory,
@@ -63,6 +76,7 @@ class _AdminProductsState extends State<AdminProducts> {
         }
       }
 
+      // Apply Search Filter: Use ILIKE for case-insensitive partial name matching.
       if (_searchQuery.isNotEmpty) {
         query = query.ilike('name', '%$_searchQuery%');
       }
@@ -79,10 +93,13 @@ class _AdminProductsState extends State<AdminProducts> {
     }
   }
 
+  /// Adds a product to the authenticated user's shopping cart.
+  /// This is customer functionality but included in the admin product view for convenience.
   Future<void> _addToCart(Map<String, dynamic> product) async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) {
+        // Stop if the user is not logged in.
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to add items to cart')),
         );
@@ -126,17 +143,20 @@ class _AdminProductsState extends State<AdminProducts> {
       ).showSnackBar(const SnackBar(content: Text('Failed to add to cart')));
     }
   }
-
+  /// Handler for the search bar input changes, triggering a product reload.
   void _onSearchChanged(String value) {
     _searchQuery = value;
     _fetchProducts();
   }
 
+  /// Handler for category chip selection, triggering a product reload.
   void _onCategorySelected(String categoryName) {
     setState(() => _selectedCategory = categoryName);
     _fetchProducts();
   }
 
+  /// Determines the number of columns for the product grid based on screen width
+  /// (responsive design).
   int _gridCrossAxisCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width >= 900) return 4;

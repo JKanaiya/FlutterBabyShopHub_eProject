@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:babyshophub/main.dart';
 
+/// A screen dedicated to displaying the real-time status of a specific order.
 class TrackOrderPage extends StatefulWidget {
+  /// The unique identifier of the order to track.
   final String orderId;
   const TrackOrderPage({super.key, required this.orderId});
 
@@ -10,17 +12,22 @@ class TrackOrderPage extends StatefulWidget {
 }
 
 class _TrackOrderPageState extends State<TrackOrderPage> {
+  // Map to hold the fetched order details
   Map<String, dynamic>? _order;
+  // State variable to manage the loading indicator.
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    // Fetch the order data when the widget is initialized.
     _fetchOrder();
   }
 
+  /// Fetches the essential tracking details for the specific order ID from Supabase.
   Future<void> _fetchOrder() async {
     try {
+      // Query the 'orders' table for the specific order.
       final data = await supabase
           .from('orders')
           .select('id, status, created_at, shipping_address_id')
@@ -37,17 +44,25 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
     }
   }
 
+  /// Builds a single visual step for the order progress bar.
+  ///
+  /// @param label The text displayed below the circle (e.g., 'SHIPPED').
+  /// @param isActive Whether the step is currently active or completed.
+  /// @returns A column containing the circle avatar and the text label.
   Widget _buildProgressStep(String label, bool isActive) {
     return Column(
       children: [
         CircleAvatar(
           radius: 14,
+          // Use primary color if active, light gray otherwise.
           backgroundColor: isActive ? Color(0xff006876) : Colors.grey[300],
-          child: Icon(
-            isActive ? Icons.check : Icons.circle,
-            color: isActive ? Colors.white : Colors.grey[600],
-            size: 16,
-          ),
+          child:
+              // Show checkmark if active, circle if inactive.
+              Icon(
+                isActive ? Icons.check : Icons.circle,
+                color: isActive ? Colors.white : Colors.grey[600],
+                size: 16,
+              ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -63,6 +78,7 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine the current status, defaulting to 'pending' if null.
     final status = _order?['status'] ?? 'pending';
     // define statuses progression
     final steps = ['pending', 'shipped', 'delivered'];
@@ -97,18 +113,21 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: steps.map((step) {
                       bool active = false;
+                      // Logic to determine which steps should be marked as active/completed.
                       if (status == 'pending' && step == 'pending') {
                         active = true;
                       } else if (status == 'shipped' &&
-                          (step == 'pending' || step == 'shipped'))
+                          (step == 'pending' || step == 'shipped')) {
                         active = true;
-                      else if (status == 'delivered')
+                      } else if (status == 'delivered') {
                         active = true;
-
+                      }
+                      // If status is 'delivered', all steps are completed
                       return _buildProgressStep(step.toUpperCase(), active);
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
+                  // Current Status Details section
                   const Text(
                     "Status Details",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:babyshophub/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Global Supabase client instance.
+final supabase = Supabase.instance.client;
+
+/// A screen that displays the detailed information for a single product.
+///
+/// Includes product data, a description, customer reviews, and functionality
+/// to add the item to the cart and leave a comment.
 class ProductDetailPage extends StatefulWidget {
+  /// The unique identifier of the product to display.
   final int productId;
 
   const ProductDetailPage({super.key, required this.productId});
@@ -11,25 +19,32 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  // State variables to hold product data, reviews, and UI status.
+
   Map<String, dynamic>? _product;
   List<Map<String, dynamic>> _reviews = [];
   bool _isLoading = true;
+  // Controller for the user's comment input field.
   final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    // Fetch product details and reviews immediately on screen load.
     _loadProductDetails();
   }
 
+  /// Fetches the product's main information from Supabase and initializes dummy reviews
   Future<void> _loadProductDetails() async {
     try {
+      /// Fetches the product's main information from Supabase and initializes dummy reviews
       final productData = await supabase
           .from('products')
           .select('id, name, description, price, image_url')
           .eq('id', widget.productId)
           .maybeSingle();
 
+      // Dummy review data for demonstration purposes (replace with Supabase query for 'reviews' table).
       final dummyReviews = [
         {
           'username': 'Grace W.',
@@ -62,20 +77,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  /// Adds a new user comment locally (simulating a review submission).
+  ///
+  /// In a real application, this would involve inserting the comment into a
+  /// 'reviews' or 'comments' table in Supabase.
+  ///
   Future<void> _addComment() async {
     final comment = _commentController.text.trim();
     if (comment.isEmpty) return;
 
     final user = supabase.auth.currentUser;
 
-    // TODO: replace with actual functionality
+    // <<<<<<< Updated upstream
+    //     // TODO: replace with actual functionality
+    // =======
+    //     // Insert the new comment at the beginning of the local list.
+    // >>>>>>> Stashed changes
     setState(() {
       _reviews.insert(0, {
         'username': user?.email ?? 'Anonymous',
-        'rating': 5,
+        'rating': 5, //hardcoded rating for simplicity
         'comment': comment,
         'created_at': DateTime.now(),
       });
+      // Clear the input field.
       _commentController.clear();
     });
 
@@ -84,6 +109,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  /// Handles the logic for adding the current product to the user's shopping cart.
+  ///
+  /// It ensures a cart exists for the user (creating one if necessary) and then
+  /// inserts the product as a new item into the `cart_items` table
   Future<void> _addToCart() async {
     try {
       final user = supabase.auth.currentUser;
@@ -113,6 +142,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         cartId = existingCart['id'];
       }
 
+      //  Insert the product as a new item into the cart.
       // Add item
       await supabase.from('cart_items').insert({
         'cart_id': cartId,
@@ -141,9 +171,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (_product == null) {
       return const Scaffold(body: Center(child: Text("Product not found")));
     }
+    // <<<<<<< Updated upstream
 
+    //     final imageUrl = _product!['image_url'] ??
+    // =======
+    // Use a placeholder image if the URL is null or empty.
     final imageUrl =
         _product!['image_url'] ??
+        // >>>>>>> Stashed changes
         'https://via.placeholder.com/300x300.png?text=No+Image';
 
     return Scaffold(

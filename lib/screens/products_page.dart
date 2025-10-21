@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:babyshophub/main.dart';
 
+/// The main product browsing screen for the application.
+///
+/// This page displays a grid of available products, supports filtering by
+/// category, and allows searching by name. It also provides functionality
+/// to add products directly to the user's cart.
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
 
@@ -9,6 +14,7 @@ class ProductsPage extends StatefulWidget {
 }
 
 class _ProductsPageState extends State<ProductsPage> {
+  // State variables for managing data and UI.
   bool _isLoading = true;
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _categories = [];
@@ -18,22 +24,27 @@ class _ProductsPageState extends State<ProductsPage> {
   @override
   void initState() {
     super.initState();
+    // Load categories and products upon initialization.
     _loadData();
   }
 
+  /// Initiates the fetching of both categories and products.
   Future<void> _loadData() async {
     await _fetchCategories();
     await _fetchProducts();
   }
 
+  /// Fetches the list of product categories from the 'categories' table.
+  ///
+  /// Prepends a 'All' category option for filtering.
   Future<void> _fetchCategories() async {
     try {
       final data = await supabase.from('categories').select().order('id');
       setState(() {
+        // Prepend a dummy 'All' category for filtering.
         _categories = <Map<String, dynamic>>[
           {'id': null, 'name': 'All'},
-          ...List<Map<String, dynamic>>.from(data),
-        ];
+        ]..addAll(List<Map<String, dynamic>>.from(data));
       });
     } catch (e) {
       debugPrint('Error fetching categories: $e');
@@ -45,26 +56,28 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  /// Fetches products from Supabase, applying category and search filters.
   Future<void> _fetchProducts() async {
     setState(() => _isLoading = true);
 
     try {
       var query = supabase.from('products').select().eq('is_active', true);
-
+      //Apply Category Filter
       if (_selectedCategory != 'All') {
         final cat = _categories.firstWhere(
           (c) => c['name'] == _selectedCategory,
-          orElse: () => {},
+          orElse: () => {}, // Handle case where category might not be found.
         );
+        // Filter by the selected category's ID.
         if (cat.isNotEmpty && cat['id'] != null) {
           query = query.eq('category_id', cat['id']);
         }
       }
-
+      //Apply Search Filter (case-insensitive partial match)
       if (_searchQuery.isNotEmpty) {
         query = query.ilike('name', '%$_searchQuery%');
       }
-
+      //Execute query and sort by creation date.
       final data = await query.order('created_at', ascending: false);
       setState(() {
         _products = List<Map<String, dynamic>>.from(data);
@@ -77,10 +90,15 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  /// Adds a product to the authenticated user's shopping cart.
+  ///
+  /// This involves either retrieving or creating a `cart` record and then
+  /// inserting a new `cart_item` record.
   Future<void> _addToCart(Map<String, dynamic> product) async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) {
+        // Require login before adding to cart
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please log in to add items to cart')),
         );
@@ -95,6 +113,7 @@ class _ProductsPageState extends State<ProductsPage> {
           .maybeSingle();
 
       String cartId;
+      // Create new cart.
       if (existingCart == null) {
         final newCart = await supabase
             .from('carts')
@@ -103,6 +122,7 @@ class _ProductsPageState extends State<ProductsPage> {
             .single();
         cartId = newCart['id'];
       } else {
+        // Use existing cart ID.
         cartId = existingCart['id'];
       }
 
@@ -125,21 +145,25 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  /// Handler for the search bar input change.
   void _onSearchChanged(String value) {
     _searchQuery = value;
     _fetchProducts();
   }
 
+  /// Handler for category chip selection.
   void _onCategorySelected(String categoryName) {
     setState(() => _selectedCategory = categoryName);
+    // Refetch products with the new category filter applied.
     _fetchProducts();
   }
 
+  /// Determines the number of columns in the product grid based on screen width.
   int _gridCrossAxisCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width >= 900) return 4;
     if (width >= 600) return 3;
-    return 2;
+    return 2; // Default for mobile screens.
   }
 
   @override
@@ -264,6 +288,7 @@ class _ProductsPageState extends State<ProductsPage> {
                                   .toDouble();
 
                               return GestureDetector(
+                                // Navigate to product detail on card tap
                                 onTap: () {
                                   Navigator.pushNamed(
                                     context,
