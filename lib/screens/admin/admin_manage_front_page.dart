@@ -2,6 +2,7 @@ import 'package:babyshophub/screens/admin/admin_products.dart';
 import 'package:babyshophub/screens/products_page.dart';
 import 'package:babyshophub/screens/profile/profile_page.dart';
 import 'package:babyshophub/screens/splash_screen.dart';
+import 'package:babyshophub/screens/user_support/user_support_tickets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -25,8 +26,8 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
   final List<Widget> _adminPages = [
     SplashScreen(),
     ProductsPage(),
-    AdminProducts(),
     ProfilePage(),
+    UserSupportTicket(),
     ProfilePage(),
   ];
 

@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_manage_product.dart';
 import 'package:flutter/material.dart';
 import 'package:babyshophub/main.dart';
 
@@ -290,10 +291,14 @@ class _ProductsPageState extends State<ProductsPage> {
                               return GestureDetector(
                                 // Navigate to product detail on card tap
                                 onTap: () {
-                                  Navigator.pushNamed(
+                                  Navigator.push(
                                     context,
-                                    '/product_detail',
-                                    arguments: product['id'],
+                                    // TODO: fix routing to page with admin functionality
+                                    MaterialPageRoute(
+                                      builder: (context) => AdminProductManage(
+                                        productId: product['id'],
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: Card(
