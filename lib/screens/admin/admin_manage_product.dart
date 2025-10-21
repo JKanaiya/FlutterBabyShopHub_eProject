@@ -202,7 +202,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
               // TODO: replace the image and data here with the product received from the db
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   boxShadow: [
                     BoxShadow(
