@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:babyshophub/main.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -50,11 +48,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
-      await supabase.from('profiles').update({
-        'full_name': _nameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', user.id);
+      await supabase
+          .from('profiles')
+          .update({
+            'full_name': _nameController.text.trim(),
+            'phone': _phoneController.text.trim(),
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', user.id);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,9 +65,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
       Navigator.pop(context, true); // ✅ Return to ProfilePage
     } catch (e) {
       debugPrint("Error updating profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update profile')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to update profile')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -102,8 +103,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: "Full Name",
-                  prefixIcon:
-                  const Icon(Icons.person_outline, color: Color(0xff006876)),
+                  prefixIcon: const Icon(
+                    Icons.person_outline,
+                    color: Color(0xff006876),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -112,7 +115,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ),
                 validator: (value) =>
-                value == null || value.isEmpty ? 'Enter your name' : null,
+                    value == null || value.isEmpty ? 'Enter your name' : null,
               ),
               const SizedBox(height: 20),
 
@@ -122,8 +125,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: "Phone Number",
-                  prefixIcon:
-                  const Icon(Icons.phone_outlined, color: Color(0xff006876)),
+                  prefixIcon: const Icon(
+                    Icons.phone_outlined,
+                    color: Color(0xff006876),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -131,8 +136,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     borderSide: BorderSide.none,
                   ),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? 'Enter your phone number' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Enter your phone number'
+                    : null,
               ),
               const SizedBox(height: 40),
 
@@ -152,12 +158,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                    "Save Changes",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                          "Save Changes",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

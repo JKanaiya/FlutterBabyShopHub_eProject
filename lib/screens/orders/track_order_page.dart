@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:babyshophub/main.dart';
 
 class TrackOrderPage extends StatefulWidget {
   final String orderId;
@@ -45,14 +43,20 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
         CircleAvatar(
           radius: 14,
           backgroundColor: isActive ? Color(0xff006876) : Colors.grey[300],
-          child: Icon(isActive ? Icons.check : Icons.circle,
-              color: isActive ? Colors.white : Colors.grey[600], size: 16),
+          child: Icon(
+            isActive ? Icons.check : Icons.circle,
+            color: isActive ? Colors.white : Colors.grey[600],
+            size: 16,
+          ),
         ),
         const SizedBox(height: 6),
-        Text(label,
-            style: TextStyle(
-                color: isActive ? Color(0xff006876) : Colors.grey,
-                fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Color(0xff006876) : Colors.grey,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -77,36 +81,47 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text("Order #${widget.orderId}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-            // progress bar steps
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: steps.map((step) {
-                bool active = false;
-                if (status == 'pending' && step == 'pending') active = true;
-                else if (status == 'shipped' && (step == 'pending' || step == 'shipped'))
-                  active = true;
-                else if (status == 'delivered') active = true;
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    "Order #${widget.orderId}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // progress bar steps
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: steps.map((step) {
+                      bool active = false;
+                      if (status == 'pending' && step == 'pending') {
+                        active = true;
+                      } else if (status == 'shipped' &&
+                          (step == 'pending' || step == 'shipped'))
+                        active = true;
+                      else if (status == 'delivered')
+                        active = true;
 
-                return _buildProgressStep(step.toUpperCase(), active);
-              }).toList(),
+                      return _buildProgressStep(step.toUpperCase(), active);
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Status Details",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Your order is currently *${status.toUpperCase()}*.\nWe will notify you when the status changes.",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            const Text("Status Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Text(
-              "Your order is currently *${status.toUpperCase()}*.\nWe will notify you when the status changes.",
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

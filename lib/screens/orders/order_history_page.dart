@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:babyshophub/main.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
@@ -78,53 +76,58 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           : _orders.isEmpty
           ? const Center(child: Text("No past orders yet"))
           : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _orders.length,
-        itemBuilder: (context, idx) {
-          final order = _orders[idx];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-            elevation: 2,
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              title: Text(
-                "Order #${order['id'].toString().substring(0, 8)}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Text(
-                "Date: ${order['created_at'].toString().split('T').first}\n"
-                    "Total: \$${order['total_amount']}",
-              ),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _statusColor(order['status'] ?? ''),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  order['status']?.toUpperCase() ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+              padding: const EdgeInsets.all(16),
+              itemCount: _orders.length,
+              itemBuilder: (context, idx) {
+                final order = _orders[idx];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-              ),
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/track_order',
-                  arguments: order['id'],
+                  elevation: 2,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    title: Text(
+                      "Order #${order['id'].toString().substring(0, 8)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Date: ${order['created_at'].toString().split('T').first}\n"
+                      "Total: \$${order['total_amount']}",
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _statusColor(order['status'] ?? ''),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        order['status']?.toUpperCase() ?? '',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/track_order',
+                        arguments: order['id'],
+                      );
+                    },
+                  ),
                 );
               },
             ),
-          );
-        },
-      ),
     );
   }
 }

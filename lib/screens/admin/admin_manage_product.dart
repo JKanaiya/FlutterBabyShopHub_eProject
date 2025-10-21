@@ -6,7 +6,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class AdminProductManage extends StatefulWidget {
   final int productId;
-  AdminProductManage({super.key, required this.productId});
+  const AdminProductManage({super.key, required this.productId});
 
   @override
   State<AdminProductManage> createState() => _AdminProductManageState();
@@ -73,7 +73,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    Future<void> _addToCart(Map<String, dynamic> product) async {
+    Future<void> addToCart(Map<String, dynamic> product) async {
       try {
         if (user == null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -266,12 +266,21 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                   size: 30,
                                 ),
                               ),
-                              if (_ratingAverage! >= _ratingAverage!.floor())
-                                Icon(
-                                  Icons.star_half_rounded,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 30,
-                                ),
+                              _ratingAverage! > _ratingAverage!.floor()
+                                  ? Icon(
+                                      Icons.star_half_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      size: 30,
+                                    )
+                                  : Icon(
+                                      Icons.star_outline_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      size: 30,
+                                    ),
                             ],
                           ),
                           ListTile(
@@ -299,7 +308,7 @@ class _AdminProductManageState extends State<AdminProductManage> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () => _addToCart(_product!),
+                              onPressed: () => addToCart(_product!),
                               child: const Text(
                                 "Add to Cart",
                                 style: TextStyle(fontFamily: "ubuntu"),

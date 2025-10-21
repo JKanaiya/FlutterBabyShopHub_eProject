@@ -1,10 +1,8 @@
+import 'package:babyshophub/screens/user_support/user_support_form.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../orders/order_history_page.dart';
+import 'package:babyshophub/main.dart';
 import 'edit_profile_page.dart';
-
-
-final supabase = Supabase.instance.client;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       final data = await supabase
           .from('profiles')
-          .select('full_name, email, phone, created_at')
+          .select('full_name, email, phone, created_at, id')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -72,9 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final profile = _profile;
@@ -107,17 +103,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 Card(
                   elevation: 3,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Padding(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 25,
+                    ),
                     child: Column(
                       children: [
                         const CircleAvatar(
                           radius: 40,
                           backgroundColor: Color(0xff006876),
-                          child: Icon(Icons.person_outline,
-                              size: 45, color: Colors.white),
+                          child: Icon(
+                            Icons.person_outline,
+                            size: 45,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -129,9 +131,15 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(email, style: const TextStyle(color: Colors.black54)),
+                        Text(
+                          email,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
                         const SizedBox(height: 4),
-                        Text(phone, style: const TextStyle(color: Colors.black54)),
+                        Text(
+                          phone,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
                       ],
                     ),
                   ),
@@ -147,7 +155,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     final updated = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const EditProfilePage()),
+                        builder: (_) => const EditProfilePage(),
+                      ),
                     );
                     if (updated == true) _loadProfile();
                   },
@@ -159,7 +168,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const OrderHistoryPage()),
+                        builder: (_) => const OrderHistoryPage(),
+                      ),
                     );
                   },
                 ),
@@ -167,10 +177,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   icon: Icons.help_outline,
                   title: 'Help & Support',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                          Text('Support feature coming soon.')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => UserSupportForm(userId: profile!['id']),
+                      ),
                     );
                   },
                 ),
@@ -191,7 +202,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
       ),
-
     );
   }
 }

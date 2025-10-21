@@ -34,7 +34,8 @@ class _AdminProductsState extends State<AdminProducts> {
       setState(() {
         _categories = <Map<String, dynamic>>[
           {'id': null, 'name': 'All'},
-        ]..addAll(List<Map<String, dynamic>>.from(data));
+          ...List<Map<String, dynamic>>.from(data),
+        ];
       });
     } catch (e) {
       debugPrint('Error fetching categories: $e');
@@ -266,7 +267,7 @@ class _AdminProductsState extends State<AdminProducts> {
 
                               return GestureDetector(
                                 onTap: () {
-                                  Navigator.pushReplacement(
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) => AdminProductManage(

@@ -1,7 +1,7 @@
+import 'package:babyshophub/screens/admin/admin_manage_front_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../admin/admin_index.dart';
 
 class SignUpPage extends StatefulWidget {
   final VoidCallback onLoginClicked;
@@ -48,7 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
           if (_adminKeyController.text.trim() == adminKey) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const AdminIndex()),
+              MaterialPageRoute(builder: (_) => const AdminManageFrontPage()),
             );
           } else {
             _showMsg("Invalid admin key");

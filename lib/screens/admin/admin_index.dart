@@ -1,8 +1,8 @@
-import 'package:babyshophub/screens/admin/admin_account.dart';
 import 'package:babyshophub/screens/admin/admin_home.dart';
 import 'package:babyshophub/screens/admin/admin_manage.dart';
 import 'package:babyshophub/screens/admin/admin_products.dart';
 import 'package:babyshophub/screens/admin/admin_search.dart';
+import 'package:babyshophub/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -27,7 +27,7 @@ class _AdminIndexState extends State<AdminIndex> {
     AdminSearch(),
     AdminProducts(),
     AdminManage(),
-    AdminAccount(),
+    ProfilePage(),
   ];
 
   @override

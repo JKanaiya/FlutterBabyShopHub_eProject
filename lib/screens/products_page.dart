@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:babyshophub/main.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -34,7 +32,8 @@ class _ProductsPageState extends State<ProductsPage> {
       setState(() {
         _categories = <Map<String, dynamic>>[
           {'id': null, 'name': 'All'},
-        ]..addAll(List<Map<String, dynamic>>.from(data));
+          ...List<Map<String, dynamic>>.from(data),
+        ];
       });
     } catch (e) {
       debugPrint('Error fetching categories: $e');
@@ -399,4 +398,3 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 }
-

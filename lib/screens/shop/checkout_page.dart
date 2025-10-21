@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:babyshophub/main.dart';
 
 class CheckoutPage extends StatefulWidget {
   final String cartId;
@@ -83,13 +81,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final user = supabase.auth.currentUser;
 
       // 🧾 1. Create order
-      final orderInsert = await supabase.from('orders').insert({
-        'user_id': user!.id,
-        'total_amount': _totalAmount,
-        'currency': 'USD',
-        'status': 'pending',
-        'shipping_address_id': _selectedAddressId,
-      }).select('id').single();
+      final orderInsert = await supabase
+          .from('orders')
+          .insert({
+            'user_id': user!.id,
+            'total_amount': _totalAmount,
+            'currency': 'USD',
+            'status': 'pending',
+            'shipping_address_id': _selectedAddressId,
+          })
+          .select('id')
+          .single();
 
       final orderId = orderInsert['id'];
 
@@ -121,13 +123,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
         const SnackBar(content: Text('Order placed successfully!')),
       );
 
-      Navigator.pushReplacementNamed(context, '/order_summary',
-          arguments: orderId);
+      Navigator.pushReplacementNamed(
+        context,
+        '/order_summary',
+        arguments: orderId,
+      );
     } catch (e) {
       debugPrint("Error placing order: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to place order')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to place order')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -147,24 +152,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             children: [
               TextField(
-                  controller: labelCtrl,
-                  decoration: const InputDecoration(labelText: "Label")),
+                controller: labelCtrl,
+                decoration: const InputDecoration(labelText: "Label"),
+              ),
               TextField(
-                  controller: streetCtrl,
-                  decoration: const InputDecoration(labelText: "Street")),
+                controller: streetCtrl,
+                decoration: const InputDecoration(labelText: "Street"),
+              ),
               TextField(
-                  controller: cityCtrl,
-                  decoration: const InputDecoration(labelText: "City")),
+                controller: cityCtrl,
+                decoration: const InputDecoration(labelText: "City"),
+              ),
               TextField(
-                  controller: phoneCtrl,
-                  decoration: const InputDecoration(labelText: "Phone")),
+                controller: phoneCtrl,
+                decoration: const InputDecoration(labelText: "Phone"),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () async {
               final user = supabase.auth.currentUser;
@@ -174,7 +184,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 'street': streetCtrl.text,
                 'city': cityCtrl.text,
                 'phone': phoneCtrl.text,
-                'country': 'Kenya'
+                'country': 'Kenya',
               });
               Navigator.pop(context);
               _loadCheckoutData();
@@ -199,7 +209,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             height: 28,
             width: 28,
             errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.payment, color: Colors.grey),
+                const Icon(Icons.payment, color: Colors.grey),
           ),
           const SizedBox(width: 10),
           Text(label, style: const TextStyle(fontSize: 16)),
@@ -211,8 +221,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -221,9 +230,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         title: const Text(
           "CHECKOUT",
           style: TextStyle(
-              color: Color(0xff006876),
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2),
+            color: Color(0xff006876),
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -235,11 +245,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Shipping Address",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff006876))),
+              const Text(
+                "Shipping Address",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff006876),
+                ),
+              ),
               const SizedBox(height: 10),
               if (_addresses.isEmpty)
                 const Text("No addresses found. Add one below."),
@@ -250,15 +263,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   onChanged: (val) => setState(() => _selectedAddressId = val),
                   title: Text(addr['label'] ?? "Address"),
                   subtitle: Text(
-                      "${addr['street']}, ${addr['city']} - ${addr['country']}\n📞 ${addr['phone']}"),
+                    "${addr['street']}, ${addr['city']} - ${addr['country']}\n📞 ${addr['phone']}",
+                  ),
                 );
               }),
               const SizedBox(height: 10),
               Center(
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.add, color: Color(0xff006876)),
-                  label: const Text("Add Address",
-                      style: TextStyle(color: Color(0xff006876))),
+                  label: const Text(
+                    "Add Address",
+                    style: TextStyle(color: Color(0xff006876)),
+                  ),
                   onPressed: _addNewAddress,
                 ),
               ),
@@ -267,11 +283,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const Divider(),
               const SizedBox(height: 10),
 
-              const Text("Payment Method",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff006876))),
+              const Text(
+                "Payment Method",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff006876),
+                ),
+              ),
               const SizedBox(height: 8),
 
               // 💳 Payment Options
@@ -279,32 +298,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
               _buildPaymentOption("M-Pesa", "assets/images/Logos/mpesa.png"),
               _buildPaymentOption("Apple Pay", "assets/images/Logos/apple.png"),
               _buildPaymentOption(
-                  "Google Pay", "assets/images/Logos/google.png"),
+                "Google Pay",
+                "assets/images/Logos/google.png",
+              ),
 
               const SizedBox(height: 25),
 
               // 📦 Order Summary Card
               Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 3,
                 child: Padding(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Order Summary",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xff006876))),
+                      const Text(
+                        "Order Summary",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff006876),
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Subtotal",
-                              style: TextStyle(fontSize: 16)),
+                          const Text(
+                            "Subtotal",
+                            style: TextStyle(fontSize: 16),
+                          ),
                           Text("\$${_totalAmount.toStringAsFixed(2)}"),
                         ],
                       ),
@@ -320,15 +349,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Total",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold)),
-                          Text("\$${_totalAmount.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff006876))),
+                          const Text(
+                            "Total",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "\$${_totalAmount.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff006876),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -341,15 +376,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: const Text(
                             "Pay",
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

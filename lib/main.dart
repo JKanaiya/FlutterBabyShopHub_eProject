@@ -1,3 +1,4 @@
+import 'package:babyshophub/screens/admin/admin_manage_front_page.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
@@ -133,7 +134,8 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (_) => isAdmin ? const AdminHome() : const ShopPage(),
+          builder: (_) =>
+              isAdmin ? const AdminManageFrontPage() : const ShopPage(),
         ),
         (route) => false,
       );
@@ -146,7 +148,6 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
 
       if (!mounted) return;
 
-      // WARN: This code is questionable rn
       if (event == AuthChangeEvent.signedIn && session != null) {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
