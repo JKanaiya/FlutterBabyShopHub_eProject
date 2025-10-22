@@ -1,4 +1,4 @@
-import 'package:babyshophub/screens/admin/admin_products.dart';
+import 'package:babyshophub/screens/admin/admin_view_orders.dart';
 import 'package:babyshophub/screens/products_page.dart';
 import 'package:babyshophub/screens/profile/profile_page.dart';
 import 'package:babyshophub/screens/splash_screen.dart';
@@ -34,7 +34,7 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
     final List<Widget> adminPages = [
       SplashScreen(onNavigate: setSelectedIndex),
       ProductsPage(),
-      ProfilePage(),
+      AdminViewOrders(),
       UserSupportTicket(),
       ProfilePage(),
     ];
