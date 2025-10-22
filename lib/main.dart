@@ -24,17 +24,17 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://olovqmyqfrlatninpcue.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sb3ZxbXlxZnJsYXRuaW5wY3VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNTk5MDksImV4cCI6MjA3NDgzNTkwOX0.-C7iI6wiAP9h-WACNKnRX5V_Okh4t-NBDT4jGT39UTM',
   );
 
   runApp(const MyApp());
 }
 
+final supabase = Supabase.instance.client;
+
 class Globals {
   static bool isAdmin = false;
 }
-
-final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         scrollbarTheme: const ScrollbarThemeData(interactive: false),
       ),
 
-      // ✅ Main routes
+      // ✅ Static Routes
       routes: {
         '/': (context) => const SplashOrAuthGate(),
         '/auth': (context) => const AuthPage(),
@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
         '/admin_home': (context) => const AdminHome(),
       },
 
-      // ✅ Routes with arguments
+      // ✅ Dynamic Routes
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/product_detail':
@@ -98,6 +98,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// ✅ Splash Screen + Auth Gate
+/// Handles login/logout redirection and session check cleanly
 class SplashOrAuthGate extends StatefulWidget {
   const SplashOrAuthGate({super.key});
 
@@ -105,15 +107,28 @@ class SplashOrAuthGate extends StatefulWidget {
   State<SplashOrAuthGate> createState() => _SplashOrAuthGateState();
 }
 
-class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
+class _SplashOrAuthGateState extends State<SplashOrAuthGate>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = true;
-  bool _isAuthenticated = false;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    //  Listen for auth state changes globally
+    // Fade animation for splash
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..forward();
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    // Listen for auth state changes
     supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       final session = data.session;
@@ -121,62 +136,111 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
       if (!mounted) return;
 
       if (event == AuthChangeEvent.signedIn && session != null) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => Globals.isAdmin
-                  ? const AdminHome()
-                  : const AdminManageFrontPage(),
-            ),
-            (route) => false,
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _redirectTo(
+            Globals.isAdmin ? const AdminHome() : const ShopPage(),
           );
-        }
+        });
       } else if (event == AuthChangeEvent.signedOut) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const AuthPage()),
-            (route) => false,
-          );
-        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _redirectTo(const AuthPage());
+        });
       }
     });
-    _checkSession();
+
+    // Perform initial session check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkSession();
+    });
   }
 
   Future<void> _checkSession() async {
-    final session = supabase.auth.currentSession;
-    if (!mounted) return;
-    setState(() {
-      _isAuthenticated = session != null;
-      _isLoading = false;
-    });
+    try {
+      final session = supabase.auth.currentSession;
 
-    final user = await supabase.auth.getUser();
+      if (session == null) {
+        _redirectTo(const AuthPage());
+        return;
+      }
 
-    final email = user.user!.email.toString();
+      final userResponse = await supabase.auth.getUser();
+      final user = userResponse.user;
+      if (user == null) {
+        _redirectTo(const AuthPage());
+        return;
+      }
 
-    final response = await supabase
-        .from('profiles')
-        .select("id")
-        .eq("email", email)
-        .eq("is_admin", true)
-        .limit(1);
+      // ✅ Safely unwrap the nullable email
+      final email = user.email ?? '';
 
-    Globals.isAdmin = response.isNotEmpty;
+      // Check if user is admin
+      final response = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email)
+          .eq('is_admin', true)
+          .limit(1);
 
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) =>
-              Globals.isAdmin ? const AdminManageFrontPage() : const ShopPage(),
-        ),
-        (route) => false,
+      Globals.isAdmin = response.isNotEmpty;
+
+      // Redirect accordingly
+      _redirectTo(
+        Globals.isAdmin ? const AdminManageFrontPage() : const ShopPage(),
       );
+    } catch (e) {
+      debugPrint("Error checking session: $e");
+      _redirectTo(const AuthPage());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+
+  void _redirectTo(Widget page) {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => page),
+          (route) => false,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/logo.png',
+                width: 120,
+                height: 120,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "BabyShopHub",
+                style: TextStyle(
+                  fontSize: 28,
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 30),
+              if (_isLoading)
+                const CircularProgressIndicator(color: Colors.teal),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

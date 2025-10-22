@@ -1,6 +1,6 @@
 import 'package:babyshophub/main.dart' as main;
 import 'package:babyshophub/screens/admin/edit_front_page_sections.dart';
-import 'package:babyshophub/screens/products_page.dart';
+import '../screens/products_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
