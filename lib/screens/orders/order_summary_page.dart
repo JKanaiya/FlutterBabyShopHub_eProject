@@ -40,11 +40,12 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       // Fetch order info + shipping address
       final orderData = await Supabase.instance.client
           .from('orders')
-      // Select all fields from orders and join with the addresses table
+          // Select all fields from orders and join with the addresses table
           .select('*, addresses(*)')
           .eq('id', widget.orderId)
           .maybeSingle();
 
+      print(orderData);
       // Fetch items in the order
       final itemData = await Supabase.instance.client
           .from('order_items')
@@ -66,15 +67,11 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
   Widget build(BuildContext context) {
     // Show a loading screen while data is being fetched.
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     // Show a "not found" screen if the fetch succeeded but returned no data.
     if (_order == null) {
-      return const Scaffold(
-        body: Center(child: Text("Order not found")),
-      );
+      return const Scaffold(body: Center(child: Text("Order not found")));
     }
     // Extract the shipping address map for easier access.
     final address = _order?['addresses'];
@@ -91,8 +88,11 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
           children: [
             const SizedBox(height: 20),
             const Center(
-              child: Icon(Icons.check_circle,
-                  size: 80, color: Colors.greenAccent),
+              child: Icon(
+                Icons.check_circle,
+                size: 80,
+                color: Colors.greenAccent,
+              ),
             ),
             const SizedBox(height: 12),
             const Center(
@@ -105,9 +105,10 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
             Text(
               "Order ID: ${_order!['id']}",
               style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -123,20 +124,21 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                 // Product image or placeholder.
                 leading: product['image_url'] != null
                     ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    product['image_url'],
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-                )
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          product['image_url'],
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        ),
+                      )
                     : const Icon(Icons.image_not_supported),
                 // Product name.
                 title: Text(product['name']),
                 // Quantity and unit price.
                 subtitle: Text(
-                    "${item['quantity']} × \$${item['unit_price'].toStringAsFixed(2)}"),
+                  "${item['quantity']} × \$${item['unit_price'].toStringAsFixed(2)}",
+                ),
               );
             }),
             const Divider(),
@@ -144,19 +146,20 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
             Text(
               // Shipping Address details.
               "Shipping to:",
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-                "${address?['street'] ?? ''}, ${address?['city'] ?? ''}, ${address?['country'] ?? ''}"),
+              "${address?['street'] ?? ''}, ${address?['city'] ?? ''}, ${address?['country'] ?? ''}",
+            ),
             const SizedBox(height: 15),
             // Final Total Amount prominently displayed.
             Text(
               "Total Amount: \$${_order!['total_amount'].toStringAsFixed(2)}",
               style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
+                fontSize: 20,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 25),
             // Button to navigate to the order tracking page.
@@ -171,8 +174,8 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (_) =>
-                          TrackOrderPage(orderId: widget.orderId)),
+                    builder: (_) => TrackOrderPage(orderId: widget.orderId),
+                  ),
                 );
               },
               icon: const Icon(Icons.local_shipping_outlined),

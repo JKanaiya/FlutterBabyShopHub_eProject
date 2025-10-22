@@ -1,4 +1,5 @@
 import 'package:babyshophub/screens/admin/admin_manage_front_page.dart';
+import 'package:babyshophub/screens/user_support/manage_ticket.dart';
 import 'package:babyshophub/widgets/debouncer.dart';
 import 'package:flutter/material.dart';
 import 'package:babyshophub/main.dart';
@@ -15,6 +16,7 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
   List<Map<String, dynamic>> _tickets = [];
   List<Map<String, dynamic>> _allTickets = [];
   bool _isLoading = true;
+  Map<String, dynamic>? userData;
   int _selectedCategoryIndex = 0;
   final _debouncer = Debouncer(delay: const Duration(milliseconds: 500));
   final List<String> _categories = ["All", "Order", "Resolved", "Misc"];
@@ -105,6 +107,19 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
     });
   }
 
+  void _getUserDetails() async {
+    final user = await supabase.auth.getUser();
+    final user_id = user.user!.id;
+    final userDetails = await supabase
+        .from("profiles")
+        .select()
+        .eq('id', user_id)
+        .maybeSingle();
+    setState(() {
+      userData = userDetails;
+    });
+  }
+
   Future<void> _fetchInitialTickets() async {
     try {
       final data = await supabase.from('tickets').select();
@@ -130,6 +145,7 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
   void initState() {
     super.initState();
     _fetchInitialTickets();
+    _getUserDetails();
   }
 
   @override
@@ -247,8 +263,10 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
                                       context,
                                       // TODO: fix routing to page with admin functionality
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdminManageFrontPage(),
+                                        builder: (context) => ManageTicket(
+                                          ticket: ticket,
+                                          user: userData!,
+                                        ),
                                       ),
                                     );
                                   },
