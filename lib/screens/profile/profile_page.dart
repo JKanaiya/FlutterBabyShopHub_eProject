@@ -57,6 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await main.supabase.auth.signOut();
     if (!mounted) return;
     // Replace the current screen stack with the '/auth' route.
+    main.Globals.isAdmin = false;
     Navigator.pushReplacementNamed(context, '/auth');
   }
 

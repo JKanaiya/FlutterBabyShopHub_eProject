@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Function(int) onNavigate;
+  const SplashScreen({super.key, required this.onNavigate});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -77,25 +78,27 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: Theme.of(context).colorScheme.inverseSurface,
                   child: Image.memory(_splashImageBytes![0]),
                 ),
-                Positioned(
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        // TODO: Add proper functionality to navigate to the appt page here
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditSection(section: 1, text: getValueByKey(1)!),
-                        ),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      size: 40,
+                if (main.Globals.isAdmin == true)
+                  Positioned(
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditSection(
+                              section: 1,
+                              text: getValueByKey(1)!,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        size: 40,
+                      ),
                     ),
                   ),
-                ),
                 Positioned(
                   top: 10,
                   right: 0,
@@ -128,11 +131,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       ).colorScheme.primaryContainer,
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        // TODO: Add proper functionality to navigate to the appt page here
-                        MaterialPageRoute(builder: (context) => ProductsPage()),
-                      );
+                      widget.onNavigate(1);
                     },
                     child: Row(
                       children: [
@@ -178,24 +177,27 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                 ),
-                Positioned(
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditSection(section: 2, text: getValueByKey(2)!),
-                        ),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      size: 40,
+                if (main.Globals.isAdmin == true)
+                  Positioned(
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditSection(
+                              section: 2,
+                              text: getValueByKey(2)!,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                        size: 40,
+                      ),
                     ),
                   ),
-                ),
                 Positioned(
                   bottom: 70,
                   right: 100,
@@ -207,11 +209,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       padding: EdgeInsets.all(25),
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        // TODO: Add proper functionality to navigate to the appt page here
-                        MaterialPageRoute(builder: (context) => ProductsPage()),
-                      );
+                      widget.onNavigate(1);
                     },
                     child: Text(
                       "Discover",
@@ -264,12 +262,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                   ).colorScheme.onTertiary,
                                 ),
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProductsPage(),
-                                    ),
-                                  );
+                                  widget.onNavigate(1);
                                 },
                                 child: SizedBox(
                                   width: 100,
@@ -305,27 +298,30 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                     ],
                   ),
-                  Positioned(
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          // TODO: Add proper functionality to navigate to the appt page here
-                          MaterialPageRoute(
-                            builder: (context) => EditSection(
-                              section: 3,
-                              text: getValueByKey(3)!,
+                  if (main.Globals.isAdmin == true)
+                    Positioned(
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            // TODO: Add proper functionality to navigate to the appt page here
+                            MaterialPageRoute(
+                              builder: (context) => EditSection(
+                                section: 3,
+                                text: getValueByKey(3)!,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.edit,
-                        color: Theme.of(context).colorScheme.secondaryContainer,
-                        size: 40,
+                          );
+                        },
+                        icon: Icon(
+                          Icons.edit,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondaryContainer,
+                          size: 40,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

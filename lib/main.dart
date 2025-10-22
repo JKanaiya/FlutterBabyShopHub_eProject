@@ -1,4 +1,5 @@
 import 'package:babyshophub/screens/admin/admin_manage_front_page.dart';
+import 'package:babyshophub/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme.dart';
@@ -27,6 +28,10 @@ Future<void> main() async {
   );
 
   runApp(const MyApp());
+}
+
+class Globals {
+  static bool isAdmin = false;
 }
 
 final supabase = Supabase.instance.client;
@@ -129,19 +134,19 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
         .eq("is_admin", true)
         .limit(1);
 
-    final isAdmin = response.isNotEmpty;
+    Globals.isAdmin = response.isNotEmpty;
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) =>
-              isAdmin ? const AdminManageFrontPage() : const ShopPage(),
+              Globals.isAdmin ? const AdminManageFrontPage() : const ShopPage(),
         ),
         (route) => false,
       );
     }
 
-    // ✅ Listen for auth state changes globally
+    //  Listen for auth state changes globally
     supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       final session = data.session;
@@ -152,7 +157,9 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(
-              builder: (_) => isAdmin ? const AdminHome() : const ShopPage(),
+              builder: (_) => Globals.isAdmin
+                  ? const AdminHome()
+                  : const AdminManageFrontPage(),
             ),
             (route) => false,
           );
@@ -174,6 +181,6 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return _isAuthenticated ? const ShopPage() : const AuthPage();
+    return _isAuthenticated ? const AdminManageFrontPage() : const AuthPage();
   }
 }

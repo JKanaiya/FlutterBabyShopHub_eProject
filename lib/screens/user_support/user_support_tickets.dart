@@ -321,7 +321,7 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
                                                   BorderRadius.circular(15),
                                             ),
                                             child: Text(
-                                              ticket["category"]?.toUpperCase(),
+                                              ticket["status"]?.toUpperCase(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .titleSmall!
@@ -403,7 +403,7 @@ class _UserSupportTicketState extends State<UserSupportTicket> {
                                                   BorderRadius.circular(15),
                                             ),
                                             child: Text(
-                                              ticket["status"]?.toUpperCase(),
+                                              ticket["category"]?.toUpperCase(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .titleSmall!

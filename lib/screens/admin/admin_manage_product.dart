@@ -176,27 +176,28 @@ class _AdminProductManageState extends State<AdminProductManage> {
         toolbarHeight: 80,
         actions: [
           // Edit button to navigate to the product editing screen
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditProduct(
-                    // Pass current product data to the edit screen.
-                    price: _product?['price'],
-                    description: _product?['description'],
-                    id: _product?['id'],
-                    name: _product?['name'],
+          if (Globals.isAdmin == true)
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditProduct(
+                      // Pass current product data to the edit screen.
+                      price: _product?['price'],
+                      description: _product?['description'],
+                      id: _product?['id'],
+                      name: _product?['name'],
+                    ),
                   ),
-                ),
-              );
-            },
-            icon: Icon(
-              Icons.edit,
-              color: Theme.of(context).colorScheme.primary,
-              size: 30,
+                );
+              },
+              icon: Icon(
+                Icons.edit,
+                color: Theme.of(context).colorScheme.primary,
+                size: 30,
+              ),
             ),
-          ),
         ],
         title: Text(
           _product?['name'],
@@ -218,38 +219,43 @@ class _AdminProductManageState extends State<AdminProductManage> {
             children: [
               // --- Product Details Card ---
               Container(
+                padding: EdgeInsets.only(bottom: 12, right: 12, left: 12),
                 decoration: BoxDecoration(
                   color: HSLColor.fromAHSL(0, 197, 0.28, 0.95).toColor(),
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withValues(alpha: 0.5),
-                      spreadRadius: 3,
+                      spreadRadius: 2,
                       blurRadius: 3,
                       offset: Offset(2, 2), // changes position of shadow
                     ),
                     BoxShadow(
                       color: Theme.of(context).colorScheme.surfaceBright,
-                      offset: Offset(-5, -2), // changes position of shadow
+                      offset: Offset(-2, -2), // changes position of shadow
                     ),
                   ],
                 ),
-                height: 500,
+                height: 530,
                 child: Column(
+                  spacing: 20,
                   children: [
                     // Product Image
-                    Expanded(child: Image.network(imageUrl, fit: BoxFit.fill)),
-                    const SizedBox(height: 20),
+                    Expanded(
+                      child: Image.network(imageUrl, fit: BoxFit.contain),
+                    ),
                     Container(
+                      // width: 450,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceBright,
+                        // color: Colors.green,
                         borderRadius: BorderRadius.only(
                           bottomLeft: Radius.circular(20),
                           bottomRight: Radius.circular(20),
                         ),
                       ),
                       padding: EdgeInsets.symmetric(
-                        horizontal: 30,
+                        horizontal: 25,
                         vertical: 20,
                       ),
                       child: Column(
@@ -305,37 +311,41 @@ class _AdminProductManageState extends State<AdminProductManage> {
                             ],
                           ),
                           // Price and Add to Cart Button
-                          ListTile(
-                            contentPadding: EdgeInsets.only(right: 0.0),
-                            leading: Text(
-                              "\$${_product?['price']}",
-                              style: Theme.of(context).textTheme.headlineSmall!
-                                  .copyWith(
-                                    fontFamily: "ubuntu",
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "\$${_product?['price']}",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall!
+                                    .copyWith(
+                                      fontFamily: "ubuntu",
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.tertiary,
+                                    ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  padding: EdgeInsets.all(20),
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                            ),
-                            trailing: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                padding: EdgeInsets.all(20),
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                onPressed: () => addToCart(_product!),
+                                child: const Text(
+                                  "Add to Cart",
+                                  style: TextStyle(fontFamily: "ubuntu"),
                                 ),
                               ),
-                              onPressed: () => addToCart(_product!),
-                              child: const Text(
-                                "Add to Cart",
-                                style: TextStyle(fontFamily: "ubuntu"),
-                              ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
@@ -516,38 +526,6 @@ class _AdminProductManageState extends State<AdminProductManage> {
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              spreadRadius: 7,
-              blurRadius: 7,
-              offset: Offset(0, 3),
-              blurStyle: BlurStyle.outer,
-            ),
-          ],
-        ),
-        width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          child: GNav(
-            gap: 8,
-            color: Theme.of(context).colorScheme.primary,
-            tabBackgroundColor: Theme.of(context).colorScheme.primary,
-            activeColor: Theme.of(context).colorScheme.onPrimary,
-            // onTabChange: (){},
-            padding: EdgeInsets.all(16),
-            tabs: const [
-              GButton(icon: Icons.home_filled, text: "Home", iconSize: 30),
-              GButton(icon: Icons.search, text: "Search", iconSize: 30),
-              GButton(icon: Icons.local_mall, text: "Products", iconSize: 30),
-              GButton(icon: Icons.manage_search, text: "Manage", iconSize: 30),
-              GButton(icon: Icons.person, text: "Account", iconSize: 30),
             ],
           ),
         ),

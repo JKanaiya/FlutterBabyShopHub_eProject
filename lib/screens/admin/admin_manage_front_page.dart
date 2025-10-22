@@ -17,24 +17,29 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
   // TODO: Add a method and var to hold the splash screen text
   int _selectedIndex = 0;
 
+  void setSelectedIndex(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   void _navigateBottomBar(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  final List<Widget> _adminPages = [
-    SplashScreen(),
-    ProductsPage(),
-    ProfilePage(),
-    UserSupportTicket(),
-    ProfilePage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> adminPages = [
+      SplashScreen(onNavigate: setSelectedIndex),
+      ProductsPage(),
+      ProfilePage(),
+      UserSupportTicket(),
+      ProfilePage(),
+    ];
     return Scaffold(
-      body: _adminPages[_selectedIndex],
+      body: adminPages[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -60,10 +65,10 @@ class _AdminManageFrontPageState extends State<AdminManageFrontPage> {
             tabs: const [
               GButton(icon: Icons.home_filled, text: "Home", iconSize: 30),
               GButton(icon: Icons.search, text: "Shop", iconSize: 30),
-              GButton(icon: Icons.manage_search, text: "Tickets", iconSize: 30),
+              GButton(icon: Icons.manage_search, text: "Orders", iconSize: 30),
               GButton(
                 icon: Icons.support_agent_rounded,
-                text: "Support",
+                text: "Tickets",
                 iconSize: 30,
               ),
               GButton(icon: Icons.person, text: "Account", iconSize: 30),

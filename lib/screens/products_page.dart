@@ -307,109 +307,130 @@ class _ProductsPageState extends State<ProductsPage> {
                                   ),
                                   elevation: 2,
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    // mainAxisAlignment:
+                                    //     MainAxisAlignment.spaceBetween,
                                     children: [
                                       Stack(
                                         children: [
                                           // Product image
-                                          ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                                  top: Radius.circular(14),
-                                                ),
-                                            child: Image.network(
-                                              imageUrl,
-                                              height:
-                                                  constraints.maxWidth /
-                                                  (crossAxisCount * 1.9),
-                                              width: double.infinity,
-                                              fit: BoxFit.cover,
+                                          Container(
+                                            height: 200,
+                                            width: double.infinity,
+                                            color: Colors.white,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(14),
+                                                  ),
+                                              child: Image.network(
+                                                imageUrl,
+                                                fit: BoxFit.fitWidth,
+                                              ),
                                             ),
                                           ),
-                                          // ⭐ Rating overlay top-right
                                           Positioned(
                                             top: 8,
-                                            right: 8,
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 4,
+                                            left: 8,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  rating.toStringAsFixed(1),
+                                                  style: TextStyle(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.black.withOpacity(
-                                                  0.6,
                                                 ),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Icon(
-                                                    Icons.star,
-                                                    color: Color(0xfffbc02d),
-                                                    size: 16,
-                                                  ),
-                                                  const SizedBox(width: 3),
-                                                  Text(
-                                                    rating.toStringAsFixed(1),
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                                Icon(
+                                                  Icons.star,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                                  size: 25,
+                                                ),
+                                                const SizedBox(width: 3),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
                                       // 🏷 Product info
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              product['name'] ?? '',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: Color(0xff006876),
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Text(
+                                                product['name'] ?? '',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontFamily: 'ubuntu',
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondary,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  "\$${product['price']}",
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 13,
+                                              // const SizedBox(height: 6),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    "\$${product['price']}",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineSmall!
+                                                        .copyWith(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .secondary,
+                                                          fontSize: 18,
+                                                        ),
                                                   ),
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.add_shopping_cart,
-                                                    color: Color(0xff006876),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Theme.of(
+                                                        context,
+                                                      ).colorScheme.primary,
+                                                      padding: EdgeInsets.all(
+                                                        15,
+                                                      ),
+                                                      foregroundColor: Theme.of(
+                                                        context,
+                                                      ).colorScheme.onPrimary,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              15,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    onPressed: () =>
+                                                        _addToCart(product),
+                                                    child: const Text(
+                                                      "Add to Cart",
+                                                      style: TextStyle(
+                                                        fontFamily: "ubuntu",
+                                                      ),
+                                                    ),
                                                   ),
-                                                  onPressed: () =>
-                                                      _addToCart(product),
-                                                  tooltip: 'Add to cart',
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
