@@ -112,6 +112,34 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
   @override
   void initState() {
     super.initState();
+
+    //  Listen for auth state changes globally
+    supabase.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      final session = data.session;
+
+      if (!mounted) return;
+
+      if (event == AuthChangeEvent.signedIn && session != null) {
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => Globals.isAdmin
+                  ? const AdminHome()
+                  : const AdminManageFrontPage(),
+            ),
+            (route) => false,
+          );
+        }
+      } else if (event == AuthChangeEvent.signedOut) {
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AuthPage()),
+            (route) => false,
+          );
+        }
+      }
+    });
     _checkSession();
   }
 
@@ -145,42 +173,10 @@ class _SplashOrAuthGateState extends State<SplashOrAuthGate> {
         (route) => false,
       );
     }
-
-    //  Listen for auth state changes globally
-    supabase.auth.onAuthStateChange.listen((data) async {
-      final event = data.event;
-      final session = data.session;
-
-      if (!mounted) return;
-
-      if (event == AuthChangeEvent.signedIn && session != null) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => Globals.isAdmin
-                  ? const AdminHome()
-                  : const AdminManageFrontPage(),
-            ),
-            (route) => false,
-          );
-        }
-      } else if (event == AuthChangeEvent.signedOut) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const AuthPage()),
-            (route) => false,
-          );
-        }
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    return _isAuthenticated ? const AdminManageFrontPage() : const AuthPage();
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

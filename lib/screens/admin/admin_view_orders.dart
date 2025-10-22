@@ -186,7 +186,7 @@ class _AdminViewOrdersState extends State<AdminViewOrders> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    label: Text('${_categories[index].toUpperCase()}'),
+                    label: Text('${_categories[index]}'),
                     onSelected: (bool selected) {
                       if (selected) {
                         // Immediate call to apply filters (passes the new category index)
